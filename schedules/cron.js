@@ -18,7 +18,7 @@ const scheduleTasks = () => {
             if (global.isSend == false && global.checkInCount <= 80 && global.checkInCount != 0) {
                 let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
                 console.log("시간", time);
-                bot.sendMessage(chatId, "출석 매크로 고장!!!");
+                sendMessage("출석 매크로 고장!!!");
                 global.isSend = true;
                 const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
                 console.log(`runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);

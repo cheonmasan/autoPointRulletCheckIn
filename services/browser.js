@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
-const { getConfig } = require('../utils/helpers');
-const { sendMessage } = require('./telegram');
+const { getConfig } = require('../utils/config');
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
@@ -16,10 +15,14 @@ const retry = async (fn, maxRetries = 3, delay = 5000) => {
 
 const closePopup = async (page) => {
     let hasError = false;
+    let errorMessage = '';
     try {
         await retry(async () => {
-            await page.waitForSelector('button.hd_pops_close', { timeout: 10000, visible: true });
             const closeButtons = await page.$$('button.hd_pops_close');
+            if (closeButtons.length === 0) {
+                console.log('팝업 없음, 스킵');
+                return;
+            }
             for (const button of closeButtons) {
                 try {
                     await button.click();
@@ -29,13 +32,14 @@ const closePopup = async (page) => {
                     hasError = true;
                 }
             }
-        });
+        }, 3, 20000);
     } catch (e) {
+        errorMessage = e.message;
         console.log(`팝업 처리 중 오류: ${e.message}, Stack: ${e.stack}`);
         hasError = true;
     }
-    if (hasError) {
-        sendMessage(`팝업 닫기 중 오류 발생: ${e.message}. 작업은 계속 진행됩니다.`);
+    if (hasError && errorMessage) {
+        console.log(`팝업 닫기 오류 기록: ${errorMessage}`);
     }
 };
 
@@ -43,20 +47,25 @@ const login = async (page, id) => {
     const { TIME, PASSWORD } = getConfig();
     try {
         await retry(async () => {
-            await page.waitForSelector("#outlogin_mb_id", { timeout: 10000 });
+            await page.waitForNetworkIdle({ timeout: 20000 });
+            await page.waitForFunction(
+                () => !!document.querySelector('#outlogin_mb_id'),
+                { timeout: 20000 }
+            );
             await page.type('#outlogin_mb_id', id);
-            await page.waitForSelector("#outlogin_mb_password");
+            await page.waitForFunction(
+                () => !!document.querySelector('#outlogin_mb_password'),
+                { timeout: 20000 }
+            );
             await page.type('#outlogin_mb_password', PASSWORD);
             await new Promise((page) => setTimeout(page, TIME));
             await page.click("#basic_outlogin > div:nth-child(4) > button");
             await new Promise((page) => setTimeout(page, TIME));
-            // 로그인 성공 여부 확인
             const isLoggedIn = await page.$('#nt_body > div > div > div.col-md-3.order-md-1.na-col');
             if (!isLoggedIn) throw new Error('로그인 실패');
         });
     } catch (e) {
         console.log(`로그인 에러: ID=${id}, 메시지=${e.message}, Stack=${e.stack}`);
-        sendMessage(`로그인 실패: ID=${id}, 에러=${e.message}`);
         throw e;
     }
 };
@@ -70,18 +79,16 @@ const logout = async (page) => {
         });
     } catch (e) {
         console.log(`로그아웃 에러: ${e.message}, Stack=${e.stack}`);
-        sendMessage(`로그아웃 실패: ${e.message}`);
     }
 };
 
 const gotoPage = async (page, url) => {
     try {
         await retry(async () => {
-            await page.goto(url, { timeout: 30000, waitUntil: 'load' });
+            await page.goto(url, { timeout: 30000, waitUntil: 'networkidle0' });
         });
     } catch (e) {
         console.log(`페이지 이동 에러: URL=${url}, 메시지=${e.message}, Stack=${e.stack}`);
-        sendMessage(`페이지 이동 실패: URL=${url}, 에러=${e.message}`);
         throw e;
     }
 };

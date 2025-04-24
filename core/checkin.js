@@ -3,7 +3,8 @@ const moment = require('moment-timezone');
 const { login, logout, gotoPage, closePopup } = require('../services/browser');
 const { checkinGetData } = require('../services/scraper');
 const { sendMessage } = require('../services/telegram');
-const { getConfig, rand } = require('../utils/helpers');
+const { rand } = require('../utils/helpers');
+const { getConfig } = require('../utils/config');
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
@@ -27,6 +28,7 @@ const runCheckIn = async (start, end) => {
 
     const browser = await puppeteer.launch({
         headless: 'new',
+        args: ['--disable-features=site-per-process'],
         protocolTimeout: 600000 * 25
     });
 
@@ -59,7 +61,18 @@ const runCheckIn = async (start, end) => {
                         await login(page, ID_DATA3[i]);
                         await gotoPage(page, 'https://onairslot.com/plugin/attendance/');
                         await new Promise((page) => setTimeout(page, TIME));
-                        await page.click("#attendance_list > form > table > tbody > tr > td:nth-child(2) > input");
+                        const checkinButton = await page.evaluateHandle(() => {
+                            return document.querySelector('#attendance_list > form > table > tbody > tr > td:nth-child(2) > input') ||
+                                   document.querySelector('input[name="checkin"]');
+                        });
+                        if (!checkinButton.asElement()) {
+                            console.log(`ID=${ID_DATA3[i]} 이미 출석 완료`);
+                            await gotoPage(page, 'https://onairslot.com/');
+                            await closePopup(page);
+                            await logout(page);
+                            return;
+                        }
+                        await checkinButton.click();
                         await new Promise((page) => setTimeout(page, TIME));
                         await gotoPage(page, 'https://onairslot.com/');
                         await closePopup(page);
@@ -91,7 +104,6 @@ const runCheckIn = async (start, end) => {
                     console.log(`runCheckIn 한국 시간: ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`, i, "/", randomData, ID_DATA3[i], "약", count, "분 후");
                 } catch (e) {
                     console.log(`출석 체크 에러: ID=${ID_DATA3[i]}, 메시지=${e.message}, Stack=${e.stack}`);
-                    sendMessage(`출석 체크 실패: ID=${ID_DATA3[i]}, 에러=${e.message}`);
                     await logout(page);
                     continue;
                 }
@@ -99,7 +111,6 @@ const runCheckIn = async (start, end) => {
         }
     } catch (e) {
         console.log(`출석 체크 치명적인 에러 발생1: ${e.message}, Stack=${e.stack}`);
-        sendMessage(`출석 체크 치명적 에러: ${e.message}`);
         global.running = false;
         global.isSend = false;
     } finally {
@@ -110,9 +121,6 @@ const runCheckIn = async (start, end) => {
             console.log("runCheckIn end", moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss"));
         } catch (e) {
             console.log(`출석 체크 치명적인 에러 발생2: ${e.message}, Stack=${e.stack}`);
-            sendMessage(`출석 체크 브라우저 종료 실패: ${e.message}`);
-            global.running = false;
-            global.isSend = false;
         }
     }
 };
