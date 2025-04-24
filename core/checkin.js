@@ -41,6 +41,7 @@ const runCheckIn = async (start, end) => {
 
         let randomData = rand(start, end);
         console.log('랜덤', randomData);
+        global.checkInCount = checkinGetData();
         const { ID_DATA3, TIME } = getConfig();
 
         for (let i = 0; i <= randomData; i++) {

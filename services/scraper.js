@@ -43,6 +43,7 @@ const checkinGetData = async () => {
         console.log(`현재 날짜(${currentDay})의 출석 데이터를 찾을 수 없음`);
     }
 
+    console.log('checkInCount :', checkInCount)
     return checkInCount;
 };
 

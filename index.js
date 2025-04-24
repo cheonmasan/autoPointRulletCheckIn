@@ -12,9 +12,9 @@ const initialize = () => {
     shuffle(ID_DATA2, 2);
     shuffle(ID_DATA3, 3);
     scheduleTasks();
-    runCheckIn(100,102);
-    runPointMart();
-    //runRullet();
+    // runCheckIn(100,102);
+    // runPointMart();
+    // runRullet();
 };
 
 initialize();

@@ -6,6 +6,11 @@ const { runRullet } = require('../core/roulette');
 const { checkinGetData } = require('../services/scraper');
 const { sendMessage } = require('../services/telegram');
 
+global.running = false;
+global.isSend = false;
+global.running1 = false;
+global.isSend1 = false;
+
 const scheduleTasks = () => {
     cron.schedule("*/30 * * * *", async () => {
         console.log('출석 global.running', global.running, 'global.isSend', global.isSend);
