@@ -1,8 +1,21 @@
-const { login, logout, gotoPage, closePopup } = require('../services/browser');
-const { getCheckinCount } = require('../services/scraper');
-const { sendMessage } = require('../services/telegram');
+const puppeteer = require('puppeteer');
 const moment = require('moment-timezone');
-const { getConfig } = require('../utils/config');
+const { login, logout, gotoPage, closePopup } = require('../services/browser');
+const { checkinGetData } = require('../services/scraper');
+const { sendMessage } = require('../services/telegram');
+const { getConfig, rand } = require('../utils/helpers');
+
+const retry = async (fn, maxRetries = 3, delay = 5000) => {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (e) {
+            console.log(`재시도 ${i + 1}/${maxRetries}: ${e.message}`);
+            if (i === maxRetries - 1) throw e;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+};
 
 const runCheckIn = async (start, end) => {
     if (global.isSend == true) {
@@ -35,23 +48,23 @@ const runCheckIn = async (start, end) => {
                 global.isSend = false;
                 i = randomData;
             } else {
-                await gotoPage(page, 'https://onairslot.com/');
-                await page.setViewport({ width: 1920, height: 1080 });
-                await closePopup(page);
-                
-                if (i == 0) {
-                    ID_DATA3[i] = "sg500";
-                }
-                await login(page, ID_DATA3[i], process.env.PASSWORD);
-                await gotoPage(page, 'https://onairslot.com/plugin/attendance/');
-                await new Promise((page) => setTimeout(page, TIME));
-
                 try {
-                    await page.click("#attendance_list > form > table > tbody > tr > td:nth-child(2) > input");
-                    await new Promise((page) => setTimeout(page, TIME));
-                    await gotoPage(page, 'https://onairslot.com/');
-                    await closePopup(page);
-                    await logout(page);
+                    await retry(async () => {
+                        await gotoPage(page, 'https://onairslot.com/');
+                        await page.setViewport({ width: 1920, height: 1080 });
+                        await closePopup(page);
+                        if (i == 0) {
+                            ID_DATA3[i] = "sg500";
+                        }
+                        await login(page, ID_DATA3[i]);
+                        await gotoPage(page, 'https://onairslot.com/plugin/attendance/');
+                        await new Promise((page) => setTimeout(page, TIME));
+                        await page.click("#attendance_list > form > table > tbody > tr > td:nth-child(2) > input");
+                        await new Promise((page) => setTimeout(page, TIME));
+                        await gotoPage(page, 'https://onairslot.com/');
+                        await closePopup(page);
+                        await logout(page);
+                    });
 
                     let count;
                     let times = parseInt(moment().tz("Asia/Seoul").format("HH"));
@@ -77,14 +90,16 @@ const runCheckIn = async (start, end) => {
                     }
                     console.log(`runCheckIn 한국 시간: ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`, i, "/", randomData, ID_DATA3[i], "약", count, "분 후");
                 } catch (e) {
-                    console.log("출석 체크 에러 발생!", e);
+                    console.log(`출석 체크 에러: ID=${ID_DATA3[i]}, 메시지=${e.message}, Stack=${e.stack}`);
+                    sendMessage(`출석 체크 실패: ID=${ID_DATA3[i]}, 에러=${e.message}`);
                     await logout(page);
                     continue;
                 }
             }
         }
     } catch (e) {
-        console.log("출석 체크 치명적인 에러 발생1!", e);
+        console.log(`출석 체크 치명적인 에러 발생1: ${e.message}, Stack=${e.stack}`);
+        sendMessage(`출석 체크 치명적 에러: ${e.message}`);
         global.running = false;
         global.isSend = false;
     } finally {
@@ -94,10 +109,10 @@ const runCheckIn = async (start, end) => {
             global.isSend = false;
             console.log("runCheckIn end", moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss"));
         } catch (e) {
-            console.log("출석 체크 치명적인 에러 발생2!", e);
+            console.log(`출석 체크 치명적인 에러 발생2: ${e.message}, Stack=${e.stack}`);
+            sendMessage(`출석 체크 브라우저 종료 실패: ${e.message}`);
             global.running = false;
             global.isSend = false;
-            console.log("runCheckIn browser error", e);
         }
     }
 };

@@ -1,90 +1,53 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment-timezone');
+const { sendMessage } = require('./telegram');
+
+const retry = async (fn, maxRetries = 3, delay = 5000) => {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (e) {
+            console.log(`재시도 ${i + 1}/${maxRetries}: ${e.message}`);
+            if (i === maxRetries - 1) throw e;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+};
 
 const checkinGetData = async () => {
     const url = `https://onairslot.com/plugin/attendance/`;
-    const response = await axios.get(url);
-    const $ = cheerio.load(response.data);
-    const attendance_layer = $('#attendance_layer');
-    let postObj = Array(35).fill().map(() => ({ day: "", count: "" }));
+    let response;
+    try {
+        response = await retry(async () => {
+            return await axios.get(url, { timeout: 10000 });
+        });
+    } catch (e) {
+        console.log(`출석 데이터 가져오기 에러: ${e.message}, Stack=${e.stack}`);
+        sendMessage(`출석 데이터 가져오기 실패: ${e.message}`);
+        throw e;
+    }
 
-    attendance_layer.each(async (index, element) => {
-        postObj[0].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(1) > div:nth-child(1) > a > span`).text().trim();
-        postObj[0].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(1) > div:nth-child(2)`).text().trim();
-        postObj[1].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(1) > a > span`).text().trim();
-        postObj[1].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(2)`).text().trim();
-        postObj[2].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(3) > div:nth-child(1) > a > span`).text().trim();
-        postObj[2].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(3) > div:nth-child(2)`).text().trim();
-        postObj[3].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(4) > div:nth-child(1) > a > span`).text().trim();
-        postObj[3].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(4) > div:nth-child(2)`).text().trim();
-        postObj[4].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(5) > div:nth-child(1) > a > span`).text().trim();
-        postObj[4].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(5) > div:nth-child(2)`).text().trim();
-        postObj[5].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(6) > div:nth-child(1) > a > span`).text().trim();
-        postObj[5].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(6) > div:nth-child(2)`).text().trim();
-        postObj[6].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(7) > div:nth-child(1) > a > span`).text().trim();
-        postObj[6].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(2) > td:nth-child(7) > div:nth-child(2)`).text().trim();
-        postObj[7].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(1) > div:nth-child(1) > a > span`).text().trim();
-        postObj[7].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(1) > div:nth-child(2)`).text().trim();
-        postObj[8].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(2) > div:nth-child(1) > a > span`).text().trim();
-        postObj[8].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(2) > div:nth-child(2)`).text().trim();
-        postObj[9].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(3) > div:nth-child(1) > a > span`).text().trim();
-        postObj[9].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(3) > div:nth-child(2)`).text().trim();
-        postObj[10].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(4) > div:nth-child(1) > a > span`).text().trim();
-        postObj[10].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(4) > div:nth-child(2)`).text().trim();
-        postObj[11].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(5) > div:nth-child(1) > a > span`).text().trim();
-        postObj[11].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(5) > div:nth-child(2)`).text().trim();
-        postObj[12].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(6) > div:nth-child(1) > a > span`).text().trim();
-        postObj[12].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(6) > div:nth-child(2)`).text().trim();
-        postObj[13].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(7) > div:nth-child(1) > a > span`).text().trim();
-        postObj[13].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(3) > td:nth-child(7) > div:nth-child(2)`).text().trim();
-        postObj[14].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(1) > div:nth-child(1) > a > span`).text().trim();
-        postObj[14].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(1) > div:nth-child(2)`).text().trim();
-        postObj[15].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(2) > div:nth-child(1) > a > span`).text().trim();
-        postObj[15].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(2) > div:nth-child(2)`).text().trim();
-        postObj[16].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(3) > div:nth-child(1) > a > span`).text().trim();
-        postObj[16].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(3) > div:nth-child(2)`).text().trim();
-        postObj[17].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(4) > div:nth-child(1) > a > span`).text().trim();
-        postObj[17].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(4) > div:nth-child(2)`).text().trim();
-        postObj[18].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(5) > div:nth-child(1) > a > span`).text().trim();
-        postObj[18].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(5) > div:nth-child(2)`).text().trim();
-        postObj[19].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(6) > div:nth-child(1) > a > span`).text().trim();
-        postObj[19].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(6) > div:nth-child(2)`).text().trim();
-        postObj[20].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(7) > div:nth-child(1) > a > span`).text().trim();
-        postObj[20].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(4) > td:nth-child(7) > div:nth-child(2)`).text().trim();
-        postObj[21].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(1) > div:nth-child(1) > a > span`).text().trim();
-        postObj[21].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(1) > div:nth-child(2)`).text().trim();
-        postObj[22].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(2) > div:nth-child(1) > a > span`).text().trim();
-        postObj[22].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(2) > div:nth-child(2)`).text().trim();
-        postObj[23].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(3) > div:nth-child(1) > a > span`).text().trim();
-        postObj[23].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(3) > div:nth-child(2)`).text().trim();
-        postObj[24].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(4) > div:nth-child(1) > a > span`).text().trim();
-        postObj[24].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(4) > div:nth-child(2)`).text().trim();
-        postObj[25].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(5) > div:nth-child(1) > a > span`).text().trim();
-        postObj[25].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(5) > div:nth-child(2)`).text().trim();
-        postObj[26].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(6) > div:nth-child(1) > a > span`).text().trim();
-        postObj[26].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(6) > div:nth-child(2)`).text().trim();
-        postObj[27].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(7) > div:nth-child(1) > a > span`).text().trim();
-        postObj[27].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(5) > td:nth-child(7) > div:nth-child(2)`).text().trim();
-        postObj[28].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(1) > div:nth-child(1) > a > span`).text().trim();
-        postObj[28].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(1) > div:nth-child(2)`).text().trim();
-        postObj[29].day = $(element).find(`# attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(2) > div:nth-child(1) > a > span`).text().trim();
-        postObj[29].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(2) > div:nth-child(2)`).text().trim();
-        postObj[30].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(3) > div:nth-child(1) > a > span`).text().trim();
-        postObj[30].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(3) > div:nth-child(2)`).text().trim();
-        postObj[31].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(4) > div:nth-child(1) > a > span`).text().trim();
-        postObj[31].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(4) > div:nth-child(2)`).text().trim();
-        postObj[32].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(5) > div:nth-child(1) > a > span`).text().trim();
-        postObj[32].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(5) > div:nth-child(2)`).text().trim();
-        postObj[33].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(6) > div:nth-child(1) > a > span`).text().trim();
-        postObj[33].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(6) > div:nth-child(2)`).text().trim();
-        postObj[34].day = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(7) > div:nth-child(1) > a > span`).text().trim();
-        postObj[34].count = $(element).find(`#attendance_layer > table > tbody > tr:nth-child(6) > td:nth-child(7) > div:nth-child(2)`).text().trim();
+    const $ = cheerio.load(response.data);
+    const currentDay = moment().tz("Asia/Seoul").format("DD");
+    let checkInCount = 0;
+
+    // 테이블 셀을 순회하며 현재 날짜에 해당하는 데이터만 추출
+    $('#attendance_layer > table > tbody > tr > td > div:nth-child(1) > a > span').each((index, element) => {
+        const day = $(element).text().trim();
+        if (day === currentDay) {
+            const countElement = $(element).parent().parent().next();
+            checkInCount = parseInt(countElement.text().trim()) || 0;
+            return false; // 현재 날짜 찾았으면 루프 종료
+        }
     });
 
-    const checkInArray = postObj.filter(param => param.day !== '');
-    const checkInCount = checkInArray.find((item) => item.day === moment().tz("Asia/Seoul").format("DD"));
-    return parseInt(checkInCount.count);
+    if (!checkInCount) {
+        console.log(`현재 날짜(${currentDay})의 출석 데이터를 찾을 수 없음`);
+        sendMessage(`현재 날짜(${currentDay})의 출석 데이터 없음`);
+    }
+
+    return checkInCount;
 };
 
 module.exports = { checkinGetData };
