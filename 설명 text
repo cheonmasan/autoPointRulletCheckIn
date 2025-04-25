@@ -4,7 +4,7 @@ core/checkin.js
 core/pointMart.js
 core/roulette.js
 schedules/cron.js
-services/broweser.js
+services/browser.js
 services/scraper.js
 services/telegram.js
 utils/config.js
@@ -17,6 +17,14 @@ https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main
 
 여기에 각 파일구조로 소스코드 확인 가능
 
-https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/index.js 
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/core/checkin.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/core/pointMart.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/core/roulette.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/schedules/cron.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/services/browser.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/services/scraper.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/utils/config.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/utils/helpers.js
+https://github.com/cheonmasan/autoPointRulletCheckIn/blob/main/index.js
 
 처럼 소스코드 확인 가능

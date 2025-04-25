@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const moment = require('moment-timezone');
 const { login, logout, gotoPage, closePopup } = require('../services/browser');
 const { getConfig } = require('../utils/config');
+const { logger } = require('../utils/loggerHelper')
 
 const runRullet = async () => {
     const browser = await puppeteer.launch({
@@ -12,7 +13,7 @@ const runRullet = async () => {
     try {
         const [page] = await browser.pages();
         page.on('dialog', async dialog => {
-            console.log('알림 =>', dialog.message());
+            logger('roulette', `알림 => ${dialog.message()}`);
             await dialog.accept();
         });
 
@@ -32,23 +33,23 @@ const runRullet = async () => {
                     await new Promise((frame) => setTimeout(frame, TIME));
                     await frame.click("#spinRoulette");
                 }
-                console.log(`runRullet ${ID_DATA2[i]} ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")} 완료`);
+                logger('roulette', `runRullet ${ID_DATA2[i]} ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")} 완료`);
                 await gotoPage(page, 'https://onairslot.com/');
                 await new Promise((page) => setTimeout(page, TIME));
                 await closePopup(page);
                 await logout(page);
                 await new Promise((page) => setTimeout(page, TIME));
             } catch (e) {
-                console.log("runRullet j for try catch error", e);
+                logger('roulette', `runRullet j for try catch error ${e}`);
                 await logout(page);
                 continue;
             }
         }
     } catch (e) {
-        console.log("runRullet run try catch error", e);
+        logger('roulette', `runRullet run try catch error ${e}`);
     } finally {
         await browser.close();
-        console.log("runRullet end");
+        logger('roulette', `runRullet end`);
     }
 };
 

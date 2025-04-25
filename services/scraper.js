@@ -1,13 +1,14 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment-timezone');
+const { logger } = require('../utils/loggerHelper')
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
         try {
             return await fn();
         } catch (e) {
-            console.log(`재시도 ${i + 1}/${maxRetries}: ${e.message}`);
+            logger('checkin', `재시도 ${i + 1}/${maxRetries}: ${e.message}`);
             if (i === maxRetries - 1) throw e;
             await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -22,7 +23,7 @@ const checkinGetData = async () => {
             return await axios.get(url, { timeout: 10000 });
         });
     } catch (e) {
-        console.log(`출석 데이터 가져오기 에러: ${e.message}, Stack=${e.stack}`);
+        logger('checkin', `출석 데이터 가져오기 에러: ${e.message}, Stack=${e.stack}`);
         throw e;
     }
 
@@ -40,10 +41,10 @@ const checkinGetData = async () => {
     });
 
     if (!checkInCount) {
-        console.log(`현재 날짜(${currentDay})의 출석 데이터를 찾을 수 없음`);
+        logger('checkin', `현재 날짜(${currentDay})의 출석 데이터를 찾을 수 없음`);
     }
 
-    console.log('checkInCount :', checkInCount)
+    logger('checkin', `checkInCount : ${checkInCount}`)
     return checkInCount;
 };
 

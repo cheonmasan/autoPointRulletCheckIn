@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Auto Point Rullet CheckIn</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      textarea {
+        width: 100%;
+        height: 150px;
+        margin-bottom: 20px;
+        resize: none;
+      }
+      button {
+        margin-right: 10px;
+        padding: 8px 16px;
+      }
+      span.status {
+        font-weight: bold;
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>✅ Auto Point Rullet CheckIn</h1>
+
+    <div>
+      <button id="checkin-btn">출석체크 <span id="checkin-status" class="status">❌</span></button>
+      <button id="pointmart-btn">포인트마트 <span id="pointmart-status" class="status">❌</span></button>
+      <button id="roulette-btn">룰렛 <span id="roulette-status" class="status">❌</span></button>
+    </div>
+
+    <h3>📘 출석 로그</h3>
+    <textarea id="checkin-log" readonly></textarea>
+
+    <h3>📙 포인트 마트 로그</h3>
+    <textarea id="pointmart-log" readonly></textarea>
+
+    <h3>📗 룰렛 로그</h3>
+    <textarea id="roulette-log" readonly></textarea>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

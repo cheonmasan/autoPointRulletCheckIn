@@ -4,13 +4,14 @@ const { login, logout, gotoPage, closePopup } = require('../services/browser');
 const { sendMessage } = require('../services/telegram');
 const { rand } = require('../utils/helpers');
 const { getConfig } = require('../utils/config');
+const { logger } = require('../utils/loggerHelper')
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
         try {
             return await fn();
         } catch (e) {
-            console.log(`재시도 ${i + 1}/${maxRetries}: ${e.message}`);
+            logger('pointmart',`재시도 ${i + 1}/${maxRetries}: ${e.message}`);
             if (i === maxRetries - 1) throw e;
             await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -59,7 +60,7 @@ const buyPoint = async (page, id, i, nextTime) => {
             } else if (point > 10000) {
                 amount = 10000;
             } else {
-                console.log(`id: ${id} 포인트 부족: ${text.replace("P", "")} 구매 불가`);
+                logger('pointmart',`id: ${id} 포인트 부족: ${text.replace("P", "")} 구매 불가`);
                 await new Promise((page) => setTimeout(page, 30000));
                 await logout(page);
                 await new Promise((page) => setTimeout(page, TIME));
@@ -67,21 +68,21 @@ const buyPoint = async (page, id, i, nextTime) => {
             }
 
             url = site.urls[amount];
-            console.log('runPointMart', i + 1, id, moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss"), `포인트[${point}] 구매[${amount / 10000}만] 사이트[${site.name}] 약`, nextTime / 60000, "분 후");
+            logger('pointmart',`runPointMart ${i + 1} ${id} ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")} 포인트[${point}] 구매[${amount / 10000}만] 사이트[${site.name}] 약 ${nextTime / 60000}분 후`)
 
             await purchasePoints(page, url, TIME);
             await logout(page);
             await new Promise((page) => setTimeout(page, nextTime));
         });
     } catch (e) {
-        console.log(`포인트 구매 에러: ID=${id}, 메시지=${e.message}, Stack=${e.stack}`);
+        logger('pointmart',`포인트 구매 에러: ID=${id}, 메시지=${e.message}, Stack=${e.stack}`);
         await logout(page);
     }
 };
 
 const runPointMart = async () => {
     let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
-    console.log("시간", time);
+    logger('pointmart',`시간 ${time}`);
     if (10 <= time && time <= 19) {
         sendMessage("포인트구매 매크로 시작했습니다.");
     }
@@ -97,7 +98,7 @@ const runPointMart = async () => {
         const [page] = await browser.pages();
         let purchaseCompleted = false;
         page.on('dialog', async dialog => {
-            console.log('알림 =>', dialog.message());
+            logger('pointmart', `알림 => ${dialog.message()}`);
             if (dialog.message().includes('하루') || dialog.message().includes('구매')) {
                 purchaseCompleted = true;
             }
@@ -111,12 +112,12 @@ const runPointMart = async () => {
                 if (10 <= time && time < 19 && !purchaseCompleted) {
                     await buyPoint(page, ID_DATA1[i], i, 60000);
                     if (purchaseCompleted) {
-                        console.log(`ID=${ID_DATA1[i]} 이미 하루 1회 구매 완료, 스킵`);
+                        logger('pointmart', `ID=${ID_DATA1[i]} 이미 하루 1회 구매 완료, 스킵`);
                         break;
                     }
                 }
             } catch (e) {
-                console.log(`포인트 마트 에러 발생1: ID=${ID_DATA1[i]}, 메시지=${e.message}, Stack=${e.stack}`);
+                logger('pointmart', `포인트 마트 에러 발생1: ID=${ID_DATA1[i]}, 메시지=${e.message}, Stack=${e.stack}`);
                 await logout(page);
                 continue;
             }
@@ -129,14 +130,14 @@ const runPointMart = async () => {
                     let cnt = rand(20, 40);
                     await buyPoint(page, ID_DATA2[i], i, cnt * 60000);
                     if (purchaseCompleted) {
-                        console.log(`ID=${ID_DATA2[i]} 이미 하루 1회 구매 완료, 스킵`);
+                        logger('pointmart', `ID=${ID_DATA2[i]} 이미 하루 1회 구매 완료, 스킵`);
                         break;
                     }
                 } else {
                     i = 30;
                 }
             } catch (e) {
-                console.log(`포인트 마트 에러 발생2: ID=${ID_DATA2[i]}, 메시지=${e.message}, Stack=${e.stack}`);
+                logger('pointmart', `포인트 마트 에러 발생2: ID=${ID_DATA2[i]}, 메시지=${e.message}, Stack=${e.stack}`);
                 await logout(page);
                 continue;
             }
@@ -145,15 +146,16 @@ const runPointMart = async () => {
         global.running1 = false;
         global.isSend1 = false;
     } catch (e) {
-        console.log(`포인트 마트 치명적인 에러 발생1: ${e.message}, Stack=${e.stack}`);
+        logger('pointmart', `포인트 마트 치명적인 에러 발생1: ${e.message}, Stack=${e.stack}`);
         global.running1 = false;
         global.isSend1 = false;
     } finally {
         try {
             await browser.close();
-            console.log("runPointMart end", moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss"));
+            const now = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
+            logger('pointmart', `runPointMart end ${now}`);
         } catch (e) {
-            console.log(`포인트 마트 치명적인 에러 발생: ${e.message}, Stack=${e.stack}`);
+            logger('pointmart',`포인트 마트 치명적인 에러 발생: ${e.message}, Stack=${e.stack}`);
             global.running1 = false;
             global.isSend1 = false;
         }
