@@ -82,7 +82,6 @@ const buyPoint = async (page, id, i, nextTime) => {
 
 const runPointMart = async () => {
     let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
-    logger('pointmart',`시간 ${time}`);
     if (10 <= time && time <= 19) {
         sendMessage("포인트구매 매크로 시작했습니다.");
     }

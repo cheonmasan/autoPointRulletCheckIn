@@ -1,31 +1,63 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Auto Point Rullet CheckIn</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 20px;
-      }
-      textarea {
-        width: 100%;
-        height: 150px;
-        margin-bottom: 20px;
-        resize: none;
-      }
-      button {
-        margin-right: 10px;
-        padding: 8px 16px;
-      }
-      span.status {
-        font-weight: bold;
-        margin-left: 5px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>✅ Auto Point Rullet CheckIn</h1>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>온에어 슬롯 커뮤니티</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 130px;
+      margin-bottom: 20px;
+      resize: none;
+      font-size: 14px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 8px 16px;
+    }
+    span.status {
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .tab {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-right: 10px;
+      background-color: #f1f1f1;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+    }
+    .tab.active {
+      background-color: #ccc;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <div id="tab1" class="tab active" onclick="switchTab(1)">출석,포인트마트</div>
+    <div id="tab2" class="tab" onclick="switchTab(2)">활동왕 찾기</div>
+  </div>
+
+  <div id="content1" class="tab-content active">
+    <h1>✅ 자동 출석체크, 자동 포인트마트 구매, 자동 룰렛 3번 돌리기</h1>
 
     <div>
       <button id="checkin-btn">출석체크 <span id="checkin-status" class="status">❌</span></button>
@@ -33,15 +65,56 @@
       <button id="roulette-btn">룰렛 <span id="roulette-status" class="status">❌</span></button>
     </div>
 
-    <h3>📘 출석 로그</h3>
-    <textarea id="checkin-log" readonly></textarea>
+    <h3>📗 룰렛 로그</h3>
+    <textarea id="roulette-log" readonly></textarea>
 
     <h3>📙 포인트 마트 로그</h3>
     <textarea id="pointmart-log" readonly></textarea>
 
-    <h3>📗 룰렛 로그</h3>
-    <textarea id="roulette-log" readonly></textarea>
+    <h3>📘 출석 로그</h3>
+    <textarea id="checkin-log" readonly></textarea>
+  </div>
 
-    <script src="renderer.js"></script>
-  </body>
+  <div id="content2" class="tab-content">
+    <div class="date-container">
+      <span id="dateDisplay"></span>
+      <input type="date" id="startDate">
+      <input type="date" id="endDate">
+      <label><input type="checkbox" id="postStatus" disabled> 게시글</label>
+      <label><input type="checkbox" id="commentStatus" disabled> 댓글</label>
+      <label><input type="checkbox" id="videoStatus" disabled> 영상업로드</label>
+      <button onclick="startScrape()">스크랩 시작</button>
+    </div>
+    <div class="progress-container">
+      <span id="progress"></span>
+      <div id="logLinks"></div>
+    </div>
+    <table id="resultsTable" border="1">
+      <thead>
+        <tr>
+          <th data-column="0">랭크</th>
+          <th data-column="1">이름</th>
+          <th data-column="2">자유게시판</th>
+          <th data-column="3">슬롯리뷰게시판</th>
+          <th data-column="4">댓글</th>
+          <th data-column="5">영상</th>
+          <th data-column="6">총점</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function switchTab(tabNumber) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      document.getElementById('tab' + tabNumber).classList.add('active');
+      document.getElementById('content' + tabNumber).classList.add('active');
+    }
+  </script>
+
+  <script src="renderer.js"></script>
+</body>
 </html>

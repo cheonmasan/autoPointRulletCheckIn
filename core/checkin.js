@@ -83,7 +83,6 @@ const runCheckIn = async (start, end) => {
 
                     let count;
                     let times = parseInt(moment().tz("Asia/Seoul").format("HH"));
-                    logger('checkin', `times, ${times}`);
                     if (times >= 23) {
                         sendMessage("금일 출석 매크로 완료되었습니다.");
                         global.running = false;
