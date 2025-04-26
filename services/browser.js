@@ -74,7 +74,7 @@ const logout = async (page) => {
     const { TIME } = getConfig();
     try {
         await retry(async () => {
-            await page.click("#nt_body > div > div > div.col-md-3.order-md-1.na-col > div.d-none.d-md-block.mb-4 > div > div.btn-group.w-100 > a:nth-child(3)");
+            await page.goto("https://onairslot.com/bbs/logout.php");
             await new Promise((page) => setTimeout(page, TIME));
         });
     } catch (e) {

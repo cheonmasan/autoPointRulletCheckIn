@@ -12,7 +12,7 @@ global.isSend = false;
 global.running1 = false;
 global.isSend1 = false;
 
-const scheduleTasks = () => {
+const scheduleTasks = (updateStatus) => {
     hookLogs('checkin');
     hookLogs('pointmart');
     hookLogs('roulette');
@@ -34,7 +34,9 @@ const scheduleTasks = () => {
                 const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
                 logger('checkin',`runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
                 await new Promise((page) => setTimeout(page, 10000));
+                updateStatus('checkin', true); 
                 runCheckIn(92, 113);
+                updateStatus('checkin', false); 
             }
         }
         if (global.running1 == true) {
@@ -48,7 +50,9 @@ const scheduleTasks = () => {
                     const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
                     logger('pointmart', `runPointMart 매크로 시작 한국 시간: ${koreaTime}`);
                     await new Promise((page) => setTimeout(page, 10000));
+                    updateStatus('pointmart', true); 
                     runPointMart();
+                    updateStatus('pointmart', false); 
                 }
             }
         }
@@ -57,20 +61,26 @@ const scheduleTasks = () => {
     cron.schedule("00 10 * * *", async () => {
         const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
         logger('pointmart', `runPointMart 매크로 시작 한국 시간: ${koreaTime}`);
-        runPointMart();
+        updateStatus('pointmart', true)
+        await runPointMart();
+        updateStatus('pointmart', false)
     });
 
     cron.schedule("00 02 * * *", async () => {
         const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
         logger('roulette', `runRullet 매크로 시작 한국 시간: ${koreaTime}`);
-        runRullet();
+        updateStatus('rullet', true)
+        await runRullet();
+        updateStatus('rullet', false)
     });
 
-    cron.schedule("0 0 * * *", async () => {
+    cron.schedule("00 00 * * *", async () => {
         const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
         logger('checkin', `runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
         await new Promise((page) => setTimeout(page, 11000));
-        runCheckIn(92, 113);
+        updateStatus('checkin', true)
+         await runCheckIn(92, 113);
+        updateStatus('checkin', false)
     });
 };
 
