@@ -112,7 +112,7 @@ const runPointMart = async () => {
                     await buyPoint(page, ID_DATA1[i], i, 60000);
                     if (purchaseCompleted) {
                         logger('pointmart', `ID=${ID_DATA1[i]} 이미 하루 1회 구매 완료, 스킵`);
-                        break;
+                        purchaseCompleted = false;
                     }
                 }
             } catch (e) {
