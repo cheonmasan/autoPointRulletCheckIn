@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 const dotenv = require('dotenv');
 dotenv.config();
 
-async function crawlSite(index) {
+async function crawlSite3(index) {
   const URL = process.env[`settlement3_site${index}_URL`];
   const ID = process.env[`settlement3_site${index}_ID`];
   const PWD = process.env[`settlement3_site${index}_PWD`];
@@ -959,4 +959,4 @@ async function crawlSite(index) {
   }
 }
 
-module.exports = { crawlSite };
+module.exports = { crawlSite3 };

@@ -6,7 +6,7 @@ const { hookLogs } = require('./utils/loggerHelper');
 const { scrape } = require('./services/scraper');
 const { crawlAllSites: crawlSettlement1 } = require('./services/settlements/settlement1');
 const { crawlAllSites: crawlSettlement2 } = require('./services/settlements/settlement2');
-const { crawlSite } = require('./services/settlements/settlement3'); // crawlSite 직접 import
+const { crawlSite3 } = require('./services/settlements/settlement3'); // crawlSite 직접 import
 const { crawlAllSites: crawlSettlement4 } = require('./services/settlements/settlement4');
 const path = require('path');
 
@@ -99,7 +99,7 @@ ipcMain.handle('run-settlement3', async () => {
   const results = [];
   for (let i = 1; i <= 6; i++) {
     mainWindow.webContents.send('settlement-progress', { current: i, total: 6 });
-    const res = await crawlSite(i); // crawlSite 직접 호출
+    const res = await crawlSite3(i); // crawlSite 직접 호출
     if (res) results.push(res);
   }
   return results;
