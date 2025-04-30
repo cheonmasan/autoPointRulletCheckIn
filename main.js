@@ -4,12 +4,16 @@ const { scheduleTasks } = require('./schedules/cron');
 const { shuffle } = require('./utils/helpers');
 const { hookLogs } = require('./utils/loggerHelper');
 const { scrape } = require('./services/scraper');
+const { crawlAllSites: crawlSettlement1 } = require('./services/settlements/settlement1');
+const { crawlAllSites: crawlSettlement2 } = require('./services/settlements/settlement2');
+const { crawlSite } = require('./services/settlements/settlement3'); // crawlSite 직접 import
+const { crawlAllSites: crawlSettlement4 } = require('./services/settlements/settlement4');
 const path = require('path');
 
-let mainWindow; // ✅ 전역으로 선언
+let mainWindow;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({ // ✅ 여기서 mainWindow로 직접 할당
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 1080,
     autoHideMenuBar: true,
@@ -45,7 +49,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// ✅ 출석 체크
+// 출석 체크
 ipcMain.handle('run-checkin', async () => {
   hookLogs('checkin');
   updateStatus('checkin', true);
@@ -55,7 +59,7 @@ ipcMain.handle('run-checkin', async () => {
   return result;
 });
 
-// ✅ 포인트 마트
+// 포인트 마트
 ipcMain.handle('run-pointmart', async () => {
   hookLogs('pointmart');
   updateStatus('pointmart', true);
@@ -65,7 +69,7 @@ ipcMain.handle('run-pointmart', async () => {
   return result;
 });
 
-// ✅ 룰렛
+// 룰렛
 ipcMain.handle('run-roulette', async () => {
   hookLogs('roulette');
   updateStatus('roulette', true);
@@ -75,7 +79,7 @@ ipcMain.handle('run-roulette', async () => {
   return result;
 });
 
-// ✅ 활동왕 찾기 스크래핑
+// 활동왕 찾기 스크래핑
 ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
   try {
     const results = await scrape(startDate, endDate, (progress) => {
@@ -87,3 +91,17 @@ ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
     mainWindow.webContents.send('scrape-error', error.message);
   }
 });
+
+// 정산
+ipcMain.handle('run-settlement1', async () => await crawlSettlement1());
+ipcMain.handle('run-settlement2', async () => await crawlSettlement2());
+ipcMain.handle('run-settlement3', async () => {
+  const results = [];
+  for (let i = 1; i <= 6; i++) {
+    mainWindow.webContents.send('settlement-progress', { current: i, total: 6 });
+    const res = await crawlSite(i); // crawlSite 직접 호출
+    if (res) results.push(res);
+  }
+  return results;
+});
+ipcMain.handle('run-settlement4', async () => await crawlSettlement4());

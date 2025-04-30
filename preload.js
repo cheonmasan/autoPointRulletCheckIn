@@ -1,13 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// contextBridge.exposeInMainWorld('electronAPI', {
-//   runCheckIn: () => ipcRenderer.invoke('run-checkin'),
-//   runPointMart: () => ipcRenderer.invoke('run-pointmart'),
-//   runRoulette: () => ipcRenderer.invoke('run-roulette'),
-//   onLog: (callback) => ipcRenderer.on('log', (_event, data) => callback(data.type, data.message)),
-//   onStatusUpdate: (callback) => ipcRenderer.on('status-update', (_event, data) => callback(data.type, data.status)),
-// });
-
 contextBridge.exposeInMainWorld('electronAPI', {
   // 출석 체크
   runCheckIn: () => ipcRenderer.invoke('run-checkin'),
@@ -24,5 +16,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onScrapeResults: (callback) => ipcRenderer.on('scrape-results', (_event, results) => callback(results)),
   onScrapeError: (callback) => ipcRenderer.on('scrape-error', (_event, error) => callback(error)),
   send: (channel, data) => ipcRenderer.send(channel, data),
-  on: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(...args))
+  on: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(...args)),
+  runSettlement1: () => ipcRenderer.invoke('run-settlement1'),
+  runSettlement2: () => ipcRenderer.invoke('run-settlement2'),
+  runSettlement3: () => ipcRenderer.invoke('run-settlement3'),
+  runSettlement4: () => ipcRenderer.invoke('run-settlement4'),
+  onSettlementProgress3: (callback) => ipcRenderer.on('settlement-progress', (_event, data) => callback(data))
 });

@@ -1,5 +1,3 @@
-// renderer.js
-
 window.addEventListener('DOMContentLoaded', () => {
     // 출석/포인트마트/룰렛 버튼 + 로그 관리
     const checkinBtn = document.getElementById('checkin-btn');
@@ -49,20 +47,50 @@ window.addEventListener('DOMContentLoaded', () => {
   
     window.electronAPI.on('status-update', (data) => {
       const { type, status } = data;
-      console.log(`data`, data)
       switch (type) {
-            case 'checkin':
-            checkinStatus.textContent = status;
-            break;
-            case 'pointmart':
-            pointmartStatus.textContent = status;
-            break;
-            case 'roulette':
-            rouletteStatus.textContent = status;
-            break;
-            default :
-            break;
+        case 'checkin':
+          checkinStatus.textContent = status;
+          break;
+        case 'pointmart':
+          pointmartStatus.textContent = status;
+          break;
+        case 'roulette':
+          rouletteStatus.textContent = status;
+          break;
+        default:
+          break;
       }
+    });
+  
+    // 정산 버튼 기능 추가
+    document.getElementById('settlementBtn1')?.addEventListener('click', async () => {
+      const results = await window.electronAPI.runSettlement1();
+      results.forEach(data => addSettlementRow('settlementBody1', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+    });
+  
+    document.getElementById('settlementBtn2')?.addEventListener('click', async () => {
+      const results = await window.electronAPI.runSettlement2();
+      results.forEach(data => addSettlementRow('settlementBody2', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+    });
+  
+    document.getElementById('settlementBtn3')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';  
+        const results = await window.electronAPI.runSettlement3();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+  
+    document.getElementById('settlementBtn4')?.addEventListener('click', async () => {
+      const results = await window.electronAPI.runSettlement4();
+      results.forEach(data => addSettlementRow('settlementBody4', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+    });
+  
+    // 진행 상황 업데이트
+    window.electronAPI.onSettlementProgress3((progress) => {
+      document.getElementById('settlementStatus3').textContent = `진행중... (${progress.current}/${progress.total})`;
+      document.getElementById('settlementStatus3').className = 'progress';
     });
   
     // 활동왕 찾기 초기화
@@ -284,4 +312,3 @@ window.addEventListener('DOMContentLoaded', () => {
   
     renderTable();
   }
-  
