@@ -630,7 +630,7 @@ async function crawlSite4(index) {
       };
 
       return data;
-    }  else if (index === 3) { // 젠
+    } else if (index === 3) { // 젠
       // 로그인 입력
       await page.type('input[name="uid"]', ID);
       await page.type('input[name="pwd"]', PWD);
