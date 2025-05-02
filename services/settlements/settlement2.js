@@ -13,9 +13,9 @@ async function crawlSite2(index) {
     return null;
   }
 
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-  // page.setViewport({ width: 1920, height: 1080 })
+  page.setViewport({ width: 1920, height: 1080 })
 
   try {
     await page.goto(URL, { waitUntil: 'networkidle2' });
@@ -490,120 +490,226 @@ async function crawlSite2(index) {
       // /user로 이동
       await page.goto(`${URL}/user`, { waitUntil: 'networkidle2' });
     
-      const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY.MM.DD');
+      // 페이지 HTML 디버깅
+      const userPageContent = await page.evaluate(() => document.documentElement.outerHTML);
+      console.log(`index ${index}: /user 페이지 HTML:`, userPageContent.slice(0, 500));
     
-      // /user 테이블 데이터 추출 (빈 테이블 처리)
-      const cellData = await page.evaluate(() => {
-        const rows = document.querySelectorAll('.table.table-hover.text-nowrap tbody tr');
-        if (!rows.length) return [{ status: 'N/A', regDate: 'N/A' }];
-        return Array.from(rows).map(row => {
-          const cells = row.querySelectorAll('td');
-          return {
-            status: cells[1]?.querySelector('.badge')?.textContent.trim() || 'N/A',
-            regDate: cells[13]?.textContent.trim() || 'N/A'
-          };
+      // /user 테이블 데이터 추출 (네 제안 로직)
+      let cellData = [];
+      try {
+        await page.waitForSelector('.table.table-hover.text-nowrap tbody', { timeout: 60000 });
+        cellData = await page.evaluate(() => {
+          const rows = document.querySelectorAll('.table.table-hover.text-nowrap tbody tr');
+          if (!rows.length) return [{ status: 'N/A', regDate: 'N/A' }];
+          return Array.from(rows).map(row => {
+            const cells = row.querySelectorAll('td');
+            return {
+              status: cells[1]?.querySelector('.badge')?.textContent.trim() || 'N/A',
+              regDate: cells[13]?.textContent.trim() || 'N/A'
+            };
+          });
         });
-      });
+      } catch (e) {
+        console.warn(`index ${index}: /user 테이블 로드 실패`, e);
+        cellData = [{ status: 'N/A', regDate: 'N/A' }];
+      }
+    
+      const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY.MM.DD');
     
       let join = 0;
       let black = 0;
-      cellData.forEach(res => {
-        const regDate = res.regDate.slice(0, 10);
-        if (regDate === yesterday) {
-          join++;
-          if (res.status === '탈퇴') black++;
-        }
-      });
+      if (cellData.length === 1 && cellData[0].status === 'N/A' && cellData[0].regDate === 'N/A') {
+        console.log(`index ${index}: /user 테이블 데이터 없음`);
+      } else {
+        cellData.forEach(res => {
+          const regDate = res.regDate.slice(0, 10); // YYYY.MM.DD
+          if (regDate === yesterday) {
+            join++;
+            if (res.status === '탈퇴') black++;
+          }
+        });
+      }
     
       // /money로 이동
       await page.goto(`${URL}/money`, { waitUntil: 'networkidle2' });
     
+      // 페이지 HTML 디버깅
+      const moneyPageContent = await page.evaluate(() => document.documentElement.outerHTML);
+      console.log(`index ${index}: /money 페이지 HTML:`, moneyPageContent.slice(0, 500));
+    
       // 어제 검색
-      const yesterdayStart = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD 00:00:00');
-      const yesterdayEnd = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD 23:59:59');
+      const yesterdayStart = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
+      const yesterdayEnd = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
     
-      await page.evaluate((start, end) => {
-        const startInput = document.querySelector('#__BVID__25__value_');
-        const endInput = document.querySelector('#__BVID__28__value_');
-        if (startInput) startInput.value = start;
-        if (endInput) endInput.value = end;
-      }, yesterdayStart.split(' ')[0], yesterdayEnd.split(' ')[0]);
+      // 달력 입력
+      let dateInputSuccess = true;
+      try {
+        // 시작 날짜 달력 버튼 클릭
+        await page.waitForSelector('.b-form-datepicker button', { timeout: 60000 });
+        await page.click('.form-inline .b-form-datepicker:nth-of-type(1) button');
+        await page.waitForSelector(`div[id*="__BVID__"][role="dialog"].show`, { timeout: 15000 });
+        await page.click(`div[data-date="${yesterdayStart}"]`);
+        await page.waitForFunction(
+          () => !document.querySelector(`div[id*="__BVID__"][role="dialog"].show`),
+          { timeout: 5000 }
+        );
     
-      await page.select('select:nth-of-type(1)', '1');
-      await page.click('button.btn.btn-sm.btn-success');
-      await new Promise(resolve => setTimeout(resolve, 1000));
+        // 종료 날짜 달력 버튼 클릭
+        await page.click('.form-inline .b-form-datepicker:nth-of-type(2) button');
+        await page.waitForSelector(`div[id*="__BVID__"][role="dialog"].show`, { timeout: 15000 });
+        await page.click(`div[data-date="${yesterdayEnd}"]`);
+        await page.waitForFunction(
+          () => !document.querySelector(`div[id*="__BVID__"][role="dialog"].show`),
+          { timeout: 5000 }
+        );
+    
+        // 상태: 완료
+        await page.select('select:nth-of-type(1)', '1');
+    
+        // 검색
+        await page.click('button.btn.btn-sm.btn-success');
+        await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 결과 대기
+      } catch (e) {
+        console.warn(`index ${index}: 어제 검색 실패`, e);
+        dateInputSuccess = false;
+      }
     
       let deposit = 0;
       let withdraw = 0;
       const ids = new Set();
     
-      // /money 테이블 데이터 추출 (빈 테이블 처리)
-      const pageData = await page.evaluate(() => {
-        const rows = document.querySelectorAll('.table.table-hover.text-nowrap tbody tr');
-        if (!rows.length) return [{ type: 'N/A', status: 'N/A', id: 'N/A', amount: '0', regDate: 'N/A' }];
-        return Array.from(rows).map(row => {
-          const cells = row.querySelectorAll('td');
-          return {
-            type: cells[0]?.textContent.trim() || 'N/A',
-            status: cells[1]?.textContent.trim() || 'N/A',
-            id: cells[6]?.textContent.trim() || 'N/A',
-            amount: cells[9]?.textContent.trim() || '0',
-            regDate: cells[10]?.textContent.trim() || 'N/A'
-          };
-        });
-      });
+      if (dateInputSuccess) {
+        // 페이지 순회
+        let hasNextPage = true;
+        while (hasNextPage) {
+          const pageData = await page.evaluate(() => {
+            return Array.from(document.querySelectorAll('.table.table-hover.text-nowrap tbody tr')).map(row => {
+              const cells = row.querySelectorAll('td');
+              return {
+                type: cells[0]?.textContent.trim(),
+                status: cells[1]?.textContent.trim(),
+                id: cells[6]?.textContent.trim(),
+                amount: cells[9]?.textContent.trim(),
+                regDate: cells[10]?.textContent.trim()
+              };
+            });
+          });
     
-      pageData.forEach(res => {
-        const regDate = res.regDate.replace(/\./g, '-');
-        if (regDate >= yesterdayStart && regDate <= yesterdayEnd && res.status === '완료') {
-          const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-          if (res.id && res.id !== 'N/A') ids.add(res.id);
-          if (res.type === '충전') deposit += amount;
-          if (res.type === '환전') withdraw += amount;
+          if (!pageData.length) {
+            console.log(`index ${index}: /money 어제 테이블 데이터 없음`);
+          } else {
+            pageData.forEach(res => {
+              const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
+              if (regDate >= yesterdayStart && regDate <= yesterdayEnd && res.status === '완료') {
+                const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
+                if (res.id) ids.add(res.id);
+                if (res.type === '충전') deposit += amount;
+                if (res.type === '환전') withdraw += amount;
+              }
+            });
+          }
+    
+          // 다음 페이지 확인
+          const nextPageLink = await page.$('a[aria-label="Go to next page"]');
+          if (nextPageLink && !(await page.evaluate(el => el.classList.contains('disabled'), nextPageLink))) {
+            await Promise.all([
+              page.click('a[aria-label="Go to next page"]'),
+              page.waitForNavigation({ waitUntil: 'networkidle2' })
+            ]);
+            await page.waitForSelector('.table.table-hover.text-nowrap tbody');
+          } else {
+            hasNextPage = false;
+          }
         }
-      });
+      } else {
+        console.log(`index ${index}: /money 어제 데이터 스킵, 기본값 사용`);
+      }
     
       // 한 달 검색
-      const monthStart = moment().tz('Asia/Seoul').startOf('month').format('YYYY-MM-DD 00:00:00');
-      const monthEnd = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD 23:59:59');
-    
-      await page.evaluate((start, end) => {
-        const startInput = document.querySelector('#__BVID__25__value_');
-        const endInput = document.querySelector('#__BVID__28__value_');
-        if (startInput) startInput.value = start;
-        if (endInput) endInput.value = end;
-      }, monthStart.split(' ')[0], monthEnd.split(' ')[0]);
-    
-      await page.select('select:nth-of-type(1)', '1');
-      await page.click('button.btn.btn-sm.btn-success');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    
       let totalIn = 0;
       let totalOut = 0;
+      dateInputSuccess = true;
     
-      const monthData = await page.evaluate(() => {
-        const rows = document.querySelectorAll('.table.table-hover.text-nowrap tbody tr');
-        if (!rows.length) return [{ type: 'N/A', status: 'N/A', amount: '0', regDate: 'N/A' }];
-        return Array.from(rows).map(row => {
-          const cells = row.querySelectorAll('td');
-          return {
-            type: cells[0]?.textContent.trim() || 'N/A',
-            status: cells[1]?.textContent.trim() || 'N/A',
-            amount: cells[9]?.textContent.trim() || '0',
-            regDate: cells[10]?.textContent.trim() || 'N/A'
-          };
-        });
-      });
+      const monthStart = moment().tz('Asia/Seoul').startOf('month').format('YYYY-MM-DD');
+      const monthEnd = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
     
-      monthData.forEach(res => {
-        const regDate = res.regDate.replace(/\./g, '-');
-        if (regDate >= monthStart && regDate <= monthEnd && res.status === '완료') {
-          const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-          if (res.type === '충전') totalIn += amount;
-          if (res.type === '환전') totalOut += amount;
+      // 달력 입력
+      try {
+        // 시작 날짜 달력 버튼 클릭
+        await page.click('.form-inline .b-form-datepicker:nth-of-type(1) button');
+        await page.waitForSelector(`div[id*="__BVID__"][role="dialog"].show`, { timeout: 15000 });
+        await page.click(`div[data-date="${monthStart}"]`);
+        await page.waitForFunction(
+          () => !document.querySelector(`div[id*="__BVID__"][role="dialog"].show`),
+          { timeout: 5000 }
+        );
+    
+        // 종료 날짜 달력 버튼 클릭
+        await page.click('.form-inline .b-form-datepicker:nth-of-type(2) button');
+        await page.waitForSelector(`div[id*="__BVID__"][role="dialog"].show`, { timeout: 15000 });
+        await page.click(`div[data-date="${monthEnd}"]`);
+        await page.waitForFunction(
+          () => !document.querySelector(`div[id*="__BVID__"][role="dialog"].show`),
+          { timeout: 5000 }
+        );
+    
+        // 상태: 완료
+        await page.select('select:nth-of-type(1)', '1');
+    
+        // 검색
+        await page.click('button.btn.btn-sm.btn-success');
+        await new Promise(resolve => setTimeout(resolve, 15000));
+      } catch (e) {
+        console.warn(`index ${index}: 한 달 검색 실패`, e);
+        dateInputSuccess = false;
+      }
+    
+      if (dateInputSuccess) {
+        // 페이지 순회
+        let hasNextPage = true;
+        while (hasNextPage) {
+          const pageData = await page.evaluate(() => {
+            return Array.from(document.querySelectorAll('.table.table-hover.text-nowrap tbody tr')).map(row => {
+              const cells = row.querySelectorAll('td');
+              return {
+                type: cells[0]?.textContent.trim(),
+                status: cells[1]?.textContent.trim(),
+                amount: cells[9]?.textContent.trim(),
+                regDate: cells[10]?.textContent.trim()
+              };
+            });
+          });
+    
+          if (!pageData.length) {
+            console.log(`index ${index}: /money 한 달 테이블 데이터 없음`);
+          } else {
+            pageData.forEach(res => {
+              const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
+              if (regDate >= monthStart && regDate <= monthEnd && res.status === '완료') {
+                const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
+                if (res.type === '충전') totalIn += amount;
+                if (res.type === '환전') totalOut += amount;
+              }
+            });
+          }
+    
+          // 다음 페이지 확인
+          const nextPageLink = await page.$('a[aria-label="Go to next page"]');
+          if (nextPageLink && !(await page.evaluate(el => el.classList.contains('disabled'), nextPageLink))) {
+            await Promise.all([
+              page.click('a[aria-label="Go to next page"]'),
+              page.waitForNavigation({ waitUntil: 'networkidle2' })
+            ]);
+            await page.waitForSelector('.table.table-hover.text-nowrap tbody');
+          } else {
+            hasNextPage = false;
+          }
         }
-      });
+      } else {
+        console.log(`index ${index}: /money 한 달 데이터 스킵, 기본값 사용`);
+      }
     
+      // 데이터 객체
       const data = {
         site: '니모',
         date: yesterday,
@@ -616,6 +722,7 @@ async function crawlSite2(index) {
         totalOut
       };
     
+      // 금액 포맷팅
       data.deposit = (data.deposit || 0).toLocaleString('en-US');
       data.withdraw = (data.withdraw || 0).toLocaleString('en-US');
       data.totalIn = (data.totalIn || 0).toLocaleString('en-US');

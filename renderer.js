@@ -86,7 +86,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('settlementStatus4').textContent = '진행중...';
     document.getElementById('settlementStatus4').className = 'progress';
     const results = await window.electronAPI.runSettlement4();
-    results.forEach(data => addSettlementRow('settlementBody4', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+    results.forEach(data => { addSettlementRow('settlementBody4', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut);
+    });
     document.getElementById('settlementStatus4').textContent = '완료!';
     document.getElementById('settlementStatus4').className = 'complete';
   });
@@ -104,8 +105,8 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   window.electronAPI.onSettlementProgress4((progress) => {
-    console.log('Settlement4 Progress:', progress);
-    document.getElementById('settlementStatus4').textContent = `진행중... (${progress.current}/${progress.total})`;
+    console.log(`Settlement4 Progress: index ${progress.current}`);
+    document.getElementById('settlementStatus4').textContent = progress.current <= 2 ? `1,2 진행중...` : `1,2,3 진행중...`;
     document.getElementById('settlementStatus4').className = 'progress';
   });
 

@@ -118,10 +118,14 @@ ipcMain.handle('run-settlement3', async () => {
 
 ipcMain.handle('run-settlement4', async () => {
   const results = [];
-  for (let i = 1; i <= 1; i++) {
+  const promises = [1, 2, 3].map(async (i) => {
     mainWindow.webContents.send('settlement-progress4', { current: i, total: 3 });
-    const res = await crawlSite4(i); // crawlSite 직접 호출
+    const res = await crawlSite4(i);
+    return res;
+  });
+  const resolved = await Promise.all(promises);
+  resolved.forEach(res => {
     if (res) results.push(res);
-  }
+  });
   return results;
 });
