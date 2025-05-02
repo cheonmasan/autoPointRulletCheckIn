@@ -20,7 +20,7 @@ async function crawlSite3(index) {
   try {
     await page.goto(URL, { waitUntil: 'networkidle2' });
 
-    if (index === 1) { // 꼬부기
+    if (index === 1) { //꼬부기
       await page.type('#hdqts_id', ID);
       await page.type('#hdqts_pwd', PWD);
       await Promise.all([
