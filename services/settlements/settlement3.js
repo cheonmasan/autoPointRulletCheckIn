@@ -282,7 +282,7 @@ async function crawlSite3(index) {
           } else {
             pageData.forEach(res => {
               const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
-              if (regDate >= yesterdayStart && regDate <= yesterdayEnd && res.status === '완료') {
+              if (regDate.slice(0,10) == yesterdayStart && regDate.slice(0,10) == yesterdayEnd && res.status === '완료') {
                 const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
                 if (res.id) ids.add(res.id);
                 if (res.type === '충전') deposit += amount;
@@ -367,7 +367,7 @@ async function crawlSite3(index) {
           } else {
             pageData.forEach(res => {
               const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
-              if (regDate >= monthStart && regDate <= monthEnd && res.status === '완료') {
+              if (regDate.slice(0,10) >= monthStart && regDate.slice(0,10) <= monthEnd && res.status === '완료') {
                 const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
                 if (res.type === '충전') totalIn += amount;
                 if (res.type === '환전') totalOut += amount;
