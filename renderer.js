@@ -106,7 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   window.electronAPI.onSettlementProgress4((progress) => {
     console.log(`Settlement4 Progress: index ${progress.current}`);
-    document.getElementById('settlementStatus4').textContent = progress.current <= 2 ? `1,2 진행중...` : `1,2,3 진행중...`;
+    document.getElementById('settlementStatus4').textContent = `진행중... (${progress.current}/${progress.total})`;
     document.getElementById('settlementStatus4').className = 'progress';
   });
 
