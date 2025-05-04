@@ -4,10 +4,11 @@ const { scheduleTasks } = require('./schedules/cron');
 const { shuffle } = require('./utils/helpers');
 const { hookLogs } = require('./utils/loggerHelper');
 const { scrape } = require('./services/scraper');
-const { crawlAllSites: crawlSettlement1 } = require('./services/settlements/settlement1');
+const { crawlSite1 } = require('./services/settlements/settlement1');
 const { crawlSite2 } = require('./services/settlements/settlement2');
 const { crawlSite3 } = require('./services/settlements/settlement3');
 const { crawlSite4 } = require('./services/settlements/settlement4');
+const { crawlSite5 } = require('./services/settlements/settlement5');
 const path = require('path');
 
 let mainWindow;
@@ -94,6 +95,13 @@ ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
 
 // 정산
 ipcMain.handle('run-settlement1', async () => {
+  const results = [];
+  for (let i = 1; i <= 7; i++) {
+    mainWindow.webContents.send('settlement-progress1', { current: i, total: 7 });
+    const res = await crawlSite1(i); // crawlSite 직접 호출
+    if (res) results.push(res);
+  }
+  return results;
 });
 
 ipcMain.handle('run-settlement2', async () => {
@@ -121,6 +129,17 @@ ipcMain.handle('run-settlement4', async () => {
   for (let i = 1; i <= 3; i++) {
     mainWindow.webContents.send('settlement-progress4', { current: i, total: 3 });
     const res = await crawlSite4(i); // crawlSite 직접 호출
+    if (res) results.push(res);
+  }
+  return results;
+});
+
+
+ipcMain.handle('run-settlement5', async () => {
+  const results = [];
+  for (let i = 1; i <= 3; i++) {
+    mainWindow.webContents.send('settlement-progress5', { current: i, total: 3 });
+    const res = await crawlSite5(i); // crawlSite 직접 호출
     if (res) results.push(res);
   }
   return results;

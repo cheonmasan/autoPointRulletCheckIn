@@ -43,7 +43,7 @@ const runCheckIn = async (start, end) => {
         let randomData = rand(start, end);
         logger('checkin', `랜덤 ${randomData}`);
         global.checkInCount = checkinGetData();
-        const { ID_DATA3, TIME } = getConfig();
+        const { ID_DATA2, TIME } = getConfig();
 
         for (let i = 0; i <= randomData; i++) {
             if (global.checkInCount >= randomData) {
@@ -58,9 +58,9 @@ const runCheckIn = async (start, end) => {
                         await page.setViewport({ width: 1920, height: 1080 });
                         await closePopup(page);
                         if (i == 0) {
-                            ID_DATA3[i] = "sg500";
+                            ID_DATA2[i] = "sg500";
                         }
-                        await login(page, ID_DATA3[i]);
+                        await login(page, ID_DATA2[i]);
                         await gotoPage(page, 'https://onairslot.com/plugin/attendance/');
                         await new Promise((page) => setTimeout(page, TIME));
                         const checkinButton = await page.evaluateHandle(() => {
@@ -68,7 +68,7 @@ const runCheckIn = async (start, end) => {
                                    document.querySelector('input[name="checkin"]');
                         });
                         if (!checkinButton.asElement()) {
-                            logger('checkin', `ID=${ID_DATA3[i]} 이미 출석 완료`);
+                            logger('checkin', `ID=${ID_DATA2[i]} 이미 출석 완료`);
                             await gotoPage(page, 'https://onairslot.com/');
                             await closePopup(page);
                             await logout(page);
@@ -89,7 +89,7 @@ const runCheckIn = async (start, end) => {
                         global.isSend = false;
                         i = randomData;
                     } else {
-                        if (i < 10) {
+                        if (i < 20) {
                             count = Math.floor(Math.random() * 1) + 1;
                             await new Promise((page) => setTimeout(page, count * 60000));
                         } else {
@@ -102,9 +102,9 @@ const runCheckIn = async (start, end) => {
                             global.isSend = false;
                         }
                     }
-                    logger('checkin', `runCheckIn 한국 시간: ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`, i, "/", randomData, ID_DATA3[i], "약", count, "분 후");
+                    logger('checkin', `runCheckIn 한국 시간: ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`, i, "/", randomData, ID_DATA2[i], "약", count, "분 후");
                 } catch (e) {
-                    logger('checkin', `출석 체크 에러: ID=${ID_DATA3[i]}, 메시지=${e.message}, Stack=${e.stack}`);
+                    logger('checkin', `출석 체크 에러: ID=${ID_DATA2[i]}, 메시지=${e.message}, Stack=${e.stack}`);
                     await logout(page);
                     continue;
                 }

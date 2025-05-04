@@ -17,6 +17,10 @@ async function crawlSite3(index) {
   const page = await browser.newPage();
   page.setViewport({ width: 1920, height: 1080 })
 
+  page.on('dialog', async dialog => {
+    await dialog.accept();
+  });
+
   try {
     await page.goto(URL, { waitUntil: 'networkidle2' });
 

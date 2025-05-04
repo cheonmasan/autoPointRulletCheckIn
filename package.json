@@ -17,7 +17,8 @@
     "moment-timezone": "^0.5.46",
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0",
-    "puppeteer": "^24.6.1"
+    "puppeteer": "^24.8.0",
+    "puppeteer-real-browser": "^1.4.2"
   },
   "devDependencies": {
     "electron": "^29.0.0"

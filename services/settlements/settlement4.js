@@ -1,15 +1,12 @@
 const puppeteer = require('puppeteer');
 const moment = require('moment-timezone');
 const dotenv = require('dotenv');
-const TwoCaptcha = require("@2captcha/captcha-solver")
 dotenv.config();
 
 async function crawlSite4(index) {
   const URL = process.env[`settlement4_site${index}_URL`];
   const ID = process.env[`settlement4_site${index}_ID`];
   const PWD = process.env[`settlement4_site${index}_PWD`];
-  const TWOCAPTCHA_API_KEY = process.env['TWOCAPTCHA_API_KEY'];
-  const solver = new TwoCaptcha.Solver(TWOCAPTCHA_API_KEY)
 
   if (!URL || !ID || !PWD) {
     console.warn(`⚠️ site${index} 정보가 .env에 없습니다.`);
@@ -20,26 +17,20 @@ async function crawlSite4(index) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 }); // 화면 해상도 1920x1080
 
+  page.on('dialog', async dialog => {
+    await dialog.accept();
+  });
+
   try {
     await page.goto(URL, { waitUntil: ['networkidle2', 'domcontentloaded'] });
 
-    if (index === 1) { // 빌드
+    if (index === 1) { //빌드
       // 로그인 입력
       await page.type('input[name="uid"]', ID);
       await page.type('input[name="pwd"]', PWD);
 
-      const captchaElement = await page.$('#captcha_image');
-      if (!captchaElement) throw new Error('CAPTCHA 이미지 없음');
-
-      const screenshot = await captchaElement.screenshot({ encoding: 'base64' });
-
-      // 2Captcha로 해결
-      const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len:4, max_len: 4 });
-      console.table(solution)
-      if (!solution?.data) throw new Error('2Captcha 해결 실패');
-
       // CAPTCHA 입력
-      await page.type('input[name="captcha"]', solution.data);
+      await page.type('input[name="captcha"]', '1111');
 
       // 로그인 버튼 클릭
       await Promise.all([
@@ -318,23 +309,13 @@ async function crawlSite4(index) {
       };
 
       return data;
-    } else if (index === 2) { // 플레이
+    } else if (index === 2) { //플레이
       // 로그인 입력
       await page.type('input[name="uid"]', ID);
       await page.type('input[name="pwd"]', PWD);
 
-      const captchaElement = await page.$('#captcha_image');
-      if (!captchaElement) throw new Error('CAPTCHA 이미지 없음');
-  
-      const screenshot = await captchaElement.screenshot({ encoding: 'base64' });
-  
-        // 2Captcha로 해결
-      const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len:4, max_len: 4 });
-      console.table(solution)
-      if (!solution?.data) throw new Error('2Captcha 해결 실패');
-    
       // CAPTCHA 입력
-      await page.type('input[name="captcha"]', solution.data);
+      await page.type('input[name="captcha"]', '1111');
 
       // 로그인 버튼 클릭
       await Promise.all([
@@ -613,23 +594,13 @@ async function crawlSite4(index) {
       };
 
       return data;
-    } else if (index === 3) { // 젠
+    } else if (index === 3) { //젠
       // 로그인 입력
       await page.type('input[name="uid"]', ID);
       await page.type('input[name="pwd"]', PWD);
 
-      const captchaElement = await page.$('#captcha_image');
-      if (!captchaElement) throw new Error('CAPTCHA 이미지 없음');
-
-      const screenshot = await captchaElement.screenshot({ encoding: 'base64' });
-
-      // 2Captcha로 해결
-      const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len:4, max_len: 4 });
-      console.table(solution)
-      if (!solution?.data) throw new Error('2Captcha 해결 실패');
-
       // CAPTCHA 입력
-      await page.type('input[name="captcha"]', solution.data);
+      await page.type('input[name="captcha"]', '1111');
 
       // 로그인 버튼 클릭
       await Promise.all([
