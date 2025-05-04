@@ -100,7 +100,7 @@ ipcMain.handle('run-settlement0', async () => {
   const results = [];
   for (let i = 1; i <= 3; i++) {
     mainWindow.webContents.send('settlement-progress0', { current: i, total: 7 });
-    const res = await crawlSite0(i); // crawlSite 직접 호출
+    const res = await crawlSite0(i);
     if (res) results.push(res);
   }
   return results;
@@ -110,7 +110,7 @@ ipcMain.handle('run-settlement1', async () => {
   const results = [];
   for (let i = 1; i <= 5; i++) {
     mainWindow.webContents.send('settlement-progress1', { current: i, total: 7 });
-    const res = await crawlSite1(i); // crawlSite 직접 호출
+    const res = await crawlSite1(i);
     if (res) results.push(res);
   }
   return results;
@@ -120,7 +120,7 @@ ipcMain.handle('run-settlement2', async () => {
   const results = [];
   for (let i = 1; i <= 6; i++) {
     mainWindow.webContents.send('settlement-progress2', { current: i, total: 6 });
-    const res = await crawlSite2(i); // crawlSite 직접 호출
+    const res = await crawlSite2(i);
     if (res) results.push(res);
   }
   return results;
@@ -130,7 +130,7 @@ ipcMain.handle('run-settlement3', async () => {
   const results = [];
   for (let i = 1; i <= 6; i++) {
     mainWindow.webContents.send('settlement-progress3', { current: i, total: 6 });
-    const res = await crawlSite3(i); // crawlSite 직접 호출
+    const res = await crawlSite3(i);
     if (res) results.push(res);
   }
   return results;
@@ -140,29 +140,30 @@ ipcMain.handle('run-settlement4', async () => {
   const results = [];
   for (let i = 1; i <= 3; i++) {
     mainWindow.webContents.send('settlement-progress4', { current: i, total: 3 });
-    const res = await crawlSite4(i); // crawlSite 직접 호출
+    const res = await crawlSite4(i);
     if (res) results.push(res);
   }
   return results;
 });
-
 
 ipcMain.handle('run-settlement5', async () => {
   const results = [];
   for (let i = 1; i <= 3; i++) {
     mainWindow.webContents.send('settlement-progress5', { current: i, total: 3 });
-    const res = await crawlSite5(i); // crawlSite 직접 호출
+    const res = await crawlSite5(i);
     if (res) results.push(res);
   }
   return results;
 });
 
-ipcMain.handle('run-settlement6', async () => {
-  const results = [];
-  for (let i = 1; i <= 2; i++) {
-    mainWindow.webContents.send('settlement-progress6', { current: i, total: 3 });
-    const res = await crawlSite6(i); // crawlSite 직접 호출
-    if (res) results.push(res);
-  }
-  return results;
+ipcMain.handle('run-settlement6-zen', async () => {
+  mainWindow.webContents.send('settlement-progress6-zen', { current: 1, total: 1 });
+  const res = await crawlSite6(1);
+  return res || [];
+});
+
+ipcMain.handle('run-settlement6-build', async () => {
+  mainWindow.webContents.send('settlement-progress6-build', { current: 1, total: 1 });
+  const res = await crawlSite6(2);
+  return res || [];
 });

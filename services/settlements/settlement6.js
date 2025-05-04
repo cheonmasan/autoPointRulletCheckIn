@@ -4,290 +4,64 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 async function crawlSite6(index) {
-  const URL = process.env[`settlement1_site${index}_URL`];
-  const ID = process.env[`settlement1_site${index}_ID`];
-  const PWD = process.env[`settlement1_site${index}_PWD`];
+  const URL = process.env[`settlement6_site${index}_URL`];
+  const ID = process.env[`settlement6_site${index}_ID`];
+  const PWD = process.env[`settlement6_site${index}_PWD`];
 
   if (!URL || !ID || !PWD) {
     console.warn(`⚠️ site${index} 정보가 .env에 없습니다.`);
     return null;
   }
 
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-  page.setViewport({ width: 1920, height: 1080 })
+  await page.setViewport({ width: 1920, height: 1080 });
 
   page.on('dialog', async dialog => {
     await dialog.accept();
   });
 
   try {
-    await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(URL, { waitUntil: ['networkidle2', 'domcontentloaded'] });
 
-    if (index === 1) { //젠
-          // 로그인 입력
-          await page.type('input[name="uid"]', ID);
-          await page.type('input[name="pwd"]', PWD);
-    
-          // CAPTCHA 입력
-          await page.type('input[name="captcha"]', '1111');
-    
-          // 로그인 버튼 클릭
-          await Promise.all([
-            page.click('button[onclick="login()"]'),
-            page.waitForNavigation({ waitUntil: ['networkidle2', 'domcontentloaded'] })
-          ]);
-    
-          // 로그인 후 10초 대기
-          await new Promise(resolve => setTimeout(resolve, 10000));
-    
-          // 로그인 성공 여부 확인
-          const currentUrl = page.url();
-          if (currentUrl.includes('proc/loginProcess.php')) {
-            console.error('index 1: 로그인 실패, URL:', currentUrl);
-            return null;
-          }
-    
-          // 프레임 찾기
-          const frames = page.frames();
-          let targetFrame = null;
-          let sidebarFrame = null;
-          for (const frame of frames) {
-            const hasTable = await frame.evaluate(() => !!document.querySelector('.table.table-bordered tbody tr'));
-            const hasSidebar = await frame.evaluate(() => !!document.querySelector('.nav.nav-pills.nav-sidebar'));
-            if (hasTable) targetFrame = frame;
-            if (hasSidebar) sidebarFrame = frame;
-          }
-    
-          if (!targetFrame || !sidebarFrame) {
-            console.warn('index 1: 테이블 또는 사이드바 프레임 찾기 실패');
-            const frameNames = frames.map(f => f.name() || f.url()).join(', ');
-            console.log('index 1: 사용 가능한 프레임:', frameNames);
-            await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
-            return null;
-          }
-    
-          // 테이블 데이터 로드 대기
-          await targetFrame.waitForFunction(
-            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-            { timeout: 30000 }
-          );
-    
-          const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
-          let join = 0;
-          let black = 0;
-    
-          // 회원 데이터 크롤링
-          const cellData = await targetFrame.evaluate(() => {
-            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
-            if (!rows.length) return [];
-            return Array.from(rows).map(row => {
-              const cells = row.querySelectorAll('td');
-              return {
-                regDate: cells[9]?.textContent.trim() || '',
-                status: cells[10]?.textContent.trim() || ''
-              };
-            });
-          });
-    
-          if (!cellData.length) {
-            console.warn('index 1: /main.php 테이블 데이터 없음');
-          }
-    
-          cellData.forEach(res => {
-            if (!res.regDate) return;
-            const regDate = res.regDate.slice(0, 10);
-            if (regDate === yesterday) {
-              join++;
-              if (res.status === '탈퇴') black++;
-            }
-          });
-    
-          // ViewFrm 프레임에서 depositList.php 로드
-          const viewFrame = frames.find(f => f.name() === 'ViewFrm');
-          if (!viewFrame) {
-            console.warn('index 1: ViewFrm 프레임 찾기 실패');
-            await page.screenshot({ path: `depositList_screenshot_${index}_${Date.now()}.png` });
-            return null;
-          }
-    
-          await sidebarFrame.click('a[href="depositList.php"][target="ViewFrm"]');
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
-    
-          // 테이블 로드 대기
-          await viewFrame.waitForFunction(
-            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-            { timeout: 60000 }
-          );
-    
-          // 어제 날짜 설정
-          const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
-          await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
-          await viewFrame.$eval('#endDate', (el, value) => el.value = value, yesterdayDate);
-          await viewFrame.click('button.btn.btn-sm.btn-success');
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 후 15초 대기
-    
-          // 검색 결과 대기
-          let searchSuccess = false;
-          for (let attempt = 1; attempt <= 3; attempt++) {
-            try {
-              await viewFrame.waitForFunction(
-                () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-                { timeout: 60000 }
-              );
-              searchSuccess = true;
-              break;
-            } catch (e) {
-              console.warn(`index 1: 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
-              await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-          }
-    
-          if (!searchSuccess) {
-            console.warn('index 1: 검색 결과 로드 실패');
-            await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
-            return null;
-          }
-    
-          const ids = new Set();
-    
-          // 페이지네이션 처리
-          let pageLinks = [];
-          let attempts = 3;
-          while (attempts--) {
-            try {
-              pageLinks = await viewFrame.evaluate(() => {
-                return Array.from(document.querySelectorAll('.pagination a')).map(a => a.href.match(/goPage\('(\d+)'\)/)?.[1]).filter(x => x);
-              });
-              break;
-            } catch (e) {
-              console.warn(`index 1: 페이지네이션 읽기 재시도 (${3 - attempts}/3):`, e.message);
-              await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-          }
-    
-          const totalPages = pageLinks.length ? Math.max(...pageLinks.map(Number)) + 1 : 1;
-          console.log('index 1: 총 페이지 수:', totalPages);
-    
-          for (let pageNum = 0; pageNum < totalPages; pageNum++) {
-            if (pageNum > 0) {
-              await viewFrame.evaluate(page => window.goPage(page), pageNum);
-              await new Promise(resolve => setTimeout(resolve, 15000)); // 페이지 이동 후 15초 대기
-            } else {
-              await new Promise(resolve => setTimeout(resolve, 15000)); // 1페이지에서도 15초 대기
-            }
-    
-            // 테이블 로드 대기
-            let pageLoadSuccess = false;
-            for (let attempt = 1; attempt <= 3; attempt++) {
-              try {
-                await viewFrame.waitForFunction(
-                  () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-                  { timeout: 60000 }
-                );
-                pageLoadSuccess = true;
-                break;
-              } catch (e) {
-                console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-              }
-            }
-    
-            if (!pageLoadSuccess) {
-              console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 실패`);
-              await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
-              return null;
-            }
-    
-            const pageData = await viewFrame.evaluate(() => {
-              return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
-                const cells = row.querySelectorAll('td');
-                return {
-                  id: cells[0]?.textContent.trim() || '',
-                  status: cells[5]?.textContent.trim() || '',
-                  processDate: cells[4]?.textContent.trim() || ''
-                };
-              });
-            });
-    
-            pageData.forEach(res => {
-              if (!res.processDate || !res.id) return;
-              const processDate = res.processDate.slice(0, 10);
-              if (res.status === '완료' && processDate === yesterdayDate) {
-                ids.add(res.id);
-              }
-            });
-          }
-    
-          // /agen_cal.php로 이동
-          await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
-    
-          // 테이블 로드 대기
-          await viewFrame.waitForFunction(
-            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-            { timeout: 60000 }
-          );
-    
-          // 어제 데이터 (deposit, withdraw)
-          await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
-          await viewFrame.$eval('#endDate', (el, value) => el.value = value, yesterdayDate);
-          await viewFrame.click('button.btn.btn-sm.btn-success');
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 후 15초 대기
-    
-          await viewFrame.waitForFunction(
-            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-            { timeout: 60000 }
-          );
-    
-          const yesterdayTotals = await viewFrame.evaluate(() => {
-            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
-            return {
-              deposit: rows[2]?.querySelectorAll('td')[1]?.textContent.trim() || '0',
-              withdraw: rows[3]?.querySelectorAll('td')[1]?.textContent.trim() || '0'
-            };
-          });
-    
-          // 한 달 데이터 (totalIn, totalOut)
-          const monthStart = moment().tz('Asia/Seoul').startOf('month').format('YYYY-MM-DD');
-          await viewFrame.$eval('#startDate', (el, value) => el.value = value, monthStart);
-          await viewFrame.$eval('#endDate', (el, value) => el.value = value, yesterdayDate);
-          await viewFrame.click('button.btn.btn-sm.btn-success');
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 후 15초 대기
-    
-          await viewFrame.waitForFunction(
-            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-            { timeout: 60000 }
-          );
-    
-          const monthTotals = await viewFrame.evaluate(() => {
-            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
-            return {
-              totalIn: rows[2]?.querySelectorAll('td')[1]?.textContent.trim() || '0',
-              totalOut: rows[3]?.querySelectorAll('td')[1]?.textContent.trim() || '0'
-            };
-          });
-    
-          // 데이터 객체
-          const data = {
-            site: '젠',
-            date: yesterdayDate,
-            join,
-            black,
-            charge: ids.size,
-            deposit: parseInt(yesterdayTotals.deposit.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US'),
-            withdraw: parseInt(yesterdayTotals.withdraw.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US'),
-            totalIn: parseInt(monthTotals.totalIn.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US'),
-            totalOut: parseInt(monthTotals.totalOut.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US')
-          };
-    
-          return data;
-    } else if(index === 2) { //빌드
+    // 날짜 범위 설정
+    const today = moment().tz('Asia/Seoul');
+    const currentDate = today.date();
+    if (currentDate !== 1 && currentDate !== 16) {
+      console.warn(`⚠️ 오늘(${today.format('YYYY-MM-DD')})은 1일 또는 16일이 아닙니다. 검색 실행 안 함.`);
+      return [];
+    }
+
+    let startDate, endDate;
+    if (currentDate === 1) {
+      startDate = moment().tz('Asia/Seoul').subtract(2, 'month').date(16);
+      endDate = moment().tz('Asia/Seoul').subtract(2, 'month').endOf('month');
+    } else {
+      startDate = moment().tz('Asia/Seoul').startOf('month');
+      endDate = moment().tz('Asia/Seoul').date(15);
+    }
+
+    const dateRange = [];
+    for (let d = moment(startDate); d.isSameOrBefore(endDate); d.add(1, 'days')) {
+      dateRange.push(d.format('YYYY-MM-DD'));
+    }
+
+    // 날짜별 데이터 초기화
+    const dailyData = dateRange.map(date => ({
+      date,
+      join: 0,
+      black: 0,
+      charge: 0,
+      deposit: 0,
+      withdraw: 0,
+      totalIn: '0',
+      totalOut: '0'
+    }));
+
+    if (index === 1) { // 젠
       // 로그인 입력
       await page.type('input[name="uid"]', ID);
       await page.type('input[name="pwd"]', PWD);
-
-      // CAPTCHA 입력
       await page.type('input[name="captcha"]', '1111');
 
       // 로그인 버튼 클릭
@@ -296,14 +70,23 @@ async function crawlSite6(index) {
         page.waitForNavigation({ waitUntil: ['networkidle2', 'domcontentloaded'] })
       ]);
 
-      // 로그인 후 10초 대기
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      await new Promise(resolve => setTimeout(resolve, 20000));
 
       // 로그인 성공 여부 확인
       const currentUrl = page.url();
       if (currentUrl.includes('proc/loginProcess.php')) {
         console.error('index 1: 로그인 실패, URL:', currentUrl);
-        return null;
+        return dateRange.map(date => ({
+          site: '젠',
+          date,
+          join: 0,
+          black: 0,
+          charge: 0,
+          deposit: '0',
+          withdraw: '0',
+          totalIn: '0',
+          totalOut: '0'
+        }));
       }
 
       // 프레임 찾기
@@ -311,81 +94,107 @@ async function crawlSite6(index) {
       let targetFrame = null;
       let sidebarFrame = null;
       for (const frame of frames) {
-        const hasTable = await frame.evaluate(() => !!document.querySelector('.table.table-bordered tbody tr'));
-        const hasSidebar = await frame.evaluate(() => !!document.querySelector('.nav.nav-pills.nav-sidebar'));
+        const hasTable = await frame.evaluate(() => {
+          const table = document.querySelector('.table.table-bordered tbody tr');
+          if (table) return true;
+          return false;
+        });
+        const hasSidebar = await frame.evaluate(() => {
+          const sidebar = document.querySelector('.nav.nav-pills.nav-sidebar');
+          if (sidebar) return true;
+          return false;
+        });
         if (hasTable) targetFrame = frame;
         if (hasSidebar) sidebarFrame = frame;
       }
 
       if (!targetFrame || !sidebarFrame) {
         console.warn('index 1: 테이블 또는 사이드바 프레임 찾기 실패');
-        const frameNames = frames.map(f => f.name() || f.url()).join(', ');
-        console.log('index 1: 사용 가능한 프레임:', frameNames);
         await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
-        return null;
+        return dateRange.map(date => ({
+          site: '젠',
+          date,
+          join: 0,
+          black: 0,
+          charge: 0,
+          deposit: '0',
+          withdraw: '0',
+          totalIn: '0',
+          totalOut: '0'
+        }));
       }
 
-      // 테이블 데이터 로드 대기
       await targetFrame.waitForFunction(
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 30000 }
       );
 
-      const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
-      let join = 0;
-      let black = 0;
-
       // 회원 데이터 크롤링
       const cellData = await targetFrame.evaluate(() => {
         const rows = document.querySelectorAll('.table.table-bordered tbody tr');
-        if (!rows.length) return [];
-        return Array.from(rows).map(row => {
+        if (rows.length === 0) return [];
+        const data = [];
+        for (const row of rows) {
           const cells = row.querySelectorAll('td');
-          return {
-            regDate: cells[10]?.textContent.trim() || '',
-            status: cells[12]?.textContent.trim() || ''
-          };
-        });
+          let regDate = '';
+          let status = '';
+          if (cells[9]) regDate = cells[9].textContent.trim();
+          if (cells[10]) status = cells[10].textContent.trim();
+          data.push({ regDate, status });
+        }
+        return data;
       });
 
-      if (!cellData.length) {
+      if (cellData.length === 0) {
         console.warn('index 1: /main.php 테이블 데이터 없음');
       }
 
-      cellData.forEach(res => {
-        if (!res.regDate) return;
+      for (const res of cellData) {
+        if (!res.regDate) continue;
         const regDate = res.regDate.slice(0, 10);
-        if (regDate === yesterday) {
-          join++;
-          if (res.status === '탈퇴') black++;
+        const dateIndex = dailyData.findIndex(d => d.date === regDate);
+        if (dateIndex !== -1) {
+          dailyData[dateIndex].join++;
+          if (res.status === '탈퇴') dailyData[dateIndex].black++;
         }
-      });
-
-      // ViewFrm 프레임에서 depositList_new.php 로드
-      const viewFrame = frames.find(f => f.name() === 'ViewFrm');
-      if (!viewFrame) {
-        console.warn('index 1: ViewFrm 프레임 찾기 실패');
-        await page.screenshot({ path: `depositList_new_screenshot_${index}_${Date.now()}.png` });
-        return null;
       }
 
-      await sidebarFrame.click('a[href="depositList_new.php"][target="ViewFrm"]');
-      await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
+      // depositList.php 로드
+      const viewFrame = frames.find(f => {
+        const name = f.name();
+        if (name === 'ViewFrm') return true;
+        return false;
+      });
+      if (!viewFrame) {
+        console.warn('index 1: ViewFrm 프레임 찾기 실패');
+        await page.screenshot({ path: `depositList_screenshot_${index}_${Date.now()}.png` });
+        return dailyData.map(d => ({
+          site: '젠',
+          date: d.date,
+          join: d.join,
+          black: d.black,
+          charge: 0,
+          deposit: '0',
+          withdraw: '0',
+          totalIn: '0',
+          totalOut: '0'
+        }));
+      }
 
-      // 테이블 로드 대기
+      await sidebarFrame.click('a[href="depositList.php"][target="ViewFrm"]');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
       await viewFrame.waitForFunction(
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
 
-      // 어제 날짜 설정
-      const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
-      await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
-      await viewFrame.$eval('#endDate', (el, value) => el.value = value, yesterdayDate);
+      // deposit 데이터 검색
+      await viewFrame.$eval('#startDate', (el, value) => el.value = value, startDate.format('YYYY-MM-DD'));
+      await viewFrame.$eval('#endDate', (el, value) => el.value = value, endDate.format('YYYY-MM-DD'));
       await viewFrame.click('button.btn.btn-sm.btn-success');
-      await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 후 15초 대기
+      await new Promise(resolve => setTimeout(resolve, 20000));
 
-      // 검색 결과 대기
       let searchSuccess = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
@@ -396,151 +205,702 @@ async function crawlSite6(index) {
           searchSuccess = true;
           break;
         } catch (e) {
-          console.warn(`index 1: 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          console.warn(`index 1: deposit 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
+          const html = await viewFrame.content();
+          await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         }
       }
 
-      if (!searchSuccess) {
-        console.warn('index 1: 검색 결과 로드 실패');
-        await page.screenshot({ path: `depositList_new_search_screenshot_${index}_${Date.now()}.png` });
-        return null;
-      }
+      const depositByDate = {};
+      const idsByDate = {};
+      dateRange.forEach(date => {
+        depositByDate[date] = 0;
+        idsByDate[date] = new Set();
+      });
 
-      const ids = new Set();
+      if (searchSuccess) {
+        const tbodyContent = await viewFrame.evaluate(() => document.querySelector('.table.table-bordered tbody').innerHTML);
 
-      // 페이지네이션 처리
-      let pageLinks = [];
-      let attempts = 3;
-      while (attempts--) {
-        try {
-          pageLinks = await viewFrame.evaluate(() => {
-            return Array.from(document.querySelectorAll('.pagination a')).map(a => a.href.match(/goPage\('(\d+)'\)/)?.[1]).filter(x => x);
-          });
-          break;
-        } catch (e) {
-          console.warn(`index 1: 페이지네이션 읽기 재시도 (${3 - attempts}/3):`, e.message);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      }
-
-      const totalPages = pageLinks.length ? Math.max(...pageLinks.map(Number)) + 1 : 1;
-      console.log('index 1: 총 페이지 수:', totalPages);
-
-      for (let pageNum = 0; pageNum < totalPages; pageNum++) {
-        if (pageNum > 0) {
-          await viewFrame.evaluate(page => window.goPage(page), pageNum);
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 페이지 이동 후 15초 대기
-        } else {
-          await new Promise(resolve => setTimeout(resolve, 15000)); // 1페이지에서도 15초 대기
-        }
-
-        // 테이블 로드 대기
-        let pageLoadSuccess = false;
-        for (let attempt = 1; attempt <= 3; attempt++) {
+        let pageLinks = [];
+        let attempts = 3;
+        while (attempts--) {
           try {
-            await viewFrame.waitForFunction(
-              () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
-              { timeout: 60000 }
-            );
-            pageLoadSuccess = true;
+            pageLinks = await viewFrame.evaluate(() => {
+              const links = document.querySelectorAll('.pagination a');
+              const pageNumbers = [];
+              for (const link of links) {
+                const match = link.href.match(/goPage\('(\d+)'\)/);
+                if (match) pageNumbers.push(match[1]);
+              }
+              return pageNumbers;
+            });
             break;
           } catch (e) {
-            console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
+            console.warn(`index 1: deposit 페이지네이션 읽기 재시도 (${3 - attempts}/3):`, e.message);
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
         }
 
-        if (!pageLoadSuccess) {
-          console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 실패`);
-          await page.screenshot({ path: `depositList_new_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
-          return null;
-        }
+        const totalPages = pageLinks.length > 0 ? Math.max(...pageLinks.map(Number)) + 1 : 1;
 
-        const pageData = await viewFrame.evaluate(() => {
-          return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
-            const cells = row.querySelectorAll('td');
-            return {
-              id: cells[1]?.textContent.trim() || '',
-              status: cells[6]?.textContent.trim() || '',
-              processDate: cells[5]?.textContent.trim() || ''
-            };
-          });
-        });
-
-        pageData.forEach(res => {
-          if (!res.processDate || !res.id) return;
-          const processDate = res.processDate.slice(0, 10);
-          if (res.status === '완료' && processDate === yesterdayDate) {
-            ids.add(res.id);
+        for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+          if (pageNum > 0) {
+            await viewFrame.evaluate(page => window.goPage(page), pageNum);
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 20000));
           }
-        });
+
+          let pageLoadSuccess = false;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              await viewFrame.waitForFunction(
+                () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+                { timeout: 60000 }
+              );
+              pageLoadSuccess = true;
+              break;
+            } catch (e) {
+              console.warn(`index 1: deposit 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
+              await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            }
+          }
+
+          if (!pageLoadSuccess) {
+            console.warn(`index 1: deposit 페이지 ${pageNum + 1} 테이블 로드 실패`);
+            await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            continue;
+          }
+
+          const pageData = await viewFrame.evaluate(() => {
+            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
+            const data = [];
+            for (const row of rows) {
+              const cells = row.querySelectorAll('td');
+              let id = '';
+              let amount = '0';
+              let processDate = '';
+              let status = '';
+              if (cells[0]) id = cells[0].textContent.trim();
+              if (cells[1]) amount = cells[1].textContent.trim();
+              if (cells[4]) processDate = cells[4].textContent.trim();
+              if (cells[5]) status = cells[5].textContent.trim().replace(/<[^>]+>/g, '');
+              data.push({ id, amount, processDate, status });
+            }
+            return data;
+          });
+
+          for (const res of pageData) {
+            if (!res.processDate || !res.id || res.status !== '완료') continue;
+            const processDate = res.processDate.slice(0, 10);
+            if (depositByDate[processDate] !== undefined) {
+              const amount = parseInt(res.amount.replace(/[^0-9]/g, '')) || 0;
+              depositByDate[processDate] += amount;
+              idsByDate[processDate].add(res.id);
+            }
+          }
+        }
+      } else {
+        console.warn('index 1: deposit 검색 결과 로드 실패');
+        await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
       }
 
-      // /agen_cal.php로 이동
+      dailyData.forEach(d => {
+        d.charge = idsByDate[d.date] ? idsByDate[d.date].size : 0;
+        d.deposit = depositByDate[d.date] ? depositByDate[d.date].toLocaleString('en-US') : '0';
+      });
+
+      // withdrawList.php 로드
+      await sidebarFrame.click('a[href="withdrawList.php"][target="ViewFrm"]');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      await viewFrame.waitForFunction(
+        () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+        { timeout: 60000 }
+      );
+
+      // withdraw 데이터 검색
+      await viewFrame.$eval('#startDate', (el, value) => el.value = value, startDate.format('YYYY-MM-DD'));
+      await viewFrame.$eval('#endDate', (el, value) => el.value = value, endDate.format('YYYY-MM-DD'));
+      await viewFrame.click('button.btn.btn-sm.btn-success');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      searchSuccess = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await viewFrame.waitForFunction(
+            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+            { timeout: 60000 }
+          );
+          searchSuccess = true;
+          break;
+        } catch (e) {
+          console.warn(`index 1: withdraw 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
+          await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
+        }
+      }
+
+      const withdrawByDate = {};
+      dateRange.forEach(date => withdrawByDate[date] = 0);
+
+      if (searchSuccess) {
+        let pageLinks = [];
+        let attempts = 3;
+        while (attempts--) {
+          try {
+            pageLinks = await viewFrame.evaluate(() => {
+              const links = document.querySelectorAll('.pagination a');
+              const pageNumbers = [];
+              for (const link of links) {
+                const match = link.href.match(/goPage\('(\d+)'\)/);
+                if (match) pageNumbers.push(match[1]);
+              }
+              return pageNumbers;
+            });
+            break;
+          } catch (e) {
+            console.warn(`index 1: withdraw 페이지네이션 읽기 재시도 (${3 - attempts}/3):`, e.message);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+
+        const totalPages = pageLinks.length > 0 ? Math.max(...pageLinks.map(Number)) + 1 : 1;
+
+        for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+          if (pageNum > 0) {
+            await viewFrame.evaluate(page => window.goPage(page), pageNum);
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          }
+
+          let pageLoadSuccess = false;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              await viewFrame.waitForFunction(
+                () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+                { timeout: 60000 }
+              );
+              pageLoadSuccess = true;
+              break;
+            } catch (e) {
+              console.warn(`index 1: withdraw 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
+              await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            }
+          }
+
+          if (!pageLoadSuccess) {
+            console.warn(`index 1: withdraw 페이지 ${pageNum + 1} 테이블 로드 실패`);
+            await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            continue;
+          }
+
+          const pageData = await viewFrame.evaluate(() => {
+            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
+            const data = [];
+            for (const row of rows) {
+              const cells = row.querySelectorAll('td');
+              let id = '';
+              let amount = '0';
+              let processDate = '';
+              let status = '';
+              if (cells[1]) id = cells[1].textContent.trim();
+              if (cells[3]) amount = cells[3].textContent.trim();
+              if (cells[5]) processDate = cells[5].textContent.trim();
+              if (cells[6]) status = cells[6].textContent.trim().replace(/<[^>]+>/g, '');
+              data.push({ id, amount, processDate, status });
+            }
+            return data;
+          });
+
+          for (const res of pageData) {
+            if (!res.processDate || !res.id || res.status !== '완료') continue;
+            const processDate = res.processDate.slice(0, 10);
+            if (withdrawByDate[processDate] !== undefined) {
+              const amount = parseInt(res.amount.replace(/[^0-9]/g, '')) || 0;
+              withdrawByDate[processDate] += amount;
+            }
+          }
+        }
+      } else {
+        console.warn('index 1: withdraw 검색 결과 로드 실패');
+        await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
+      }
+
+      dailyData.forEach(d => {
+        d.withdraw = withdrawByDate[d.date] ? withdrawByDate[d.date].toLocaleString('en-US') : '0';
+      });
+
+      // agen_cal.php 로드
       await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
-      await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
+      await new Promise(resolve => setTimeout(resolve, 20000));
 
-      // 테이블 로드 대기
       await viewFrame.waitForFunction(
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
 
-      // 어제 데이터 (deposit, withdraw)
-      await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
-      await viewFrame.$eval('#endDate', (el, value) => el.value = value, yesterdayDate);
+      // totalIn, totalOut 검색
+      await viewFrame.$eval('#startDate', (el, value) => el.value = value, startDate.format('YYYY-MM-DD'));
+      await viewFrame.$eval('#endDate', (el, value) => el.value = value, endDate.format('YYYY-MM-DD'));
       await viewFrame.click('button.btn.btn-sm.btn-success');
-      await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 후 15초 대기
+      await new Promise(resolve => setTimeout(resolve, 20000));
 
       await viewFrame.waitForFunction(
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
 
-      const yesterdayTotals = await viewFrame.evaluate(() => {
+      const totals = await viewFrame.evaluate(() => {
         const rows = document.querySelectorAll('.table.table-bordered tbody tr');
-        return {
-          deposit: rows[2]?.querySelectorAll('td')[1]?.textContent.trim() || '0',
-          withdraw: rows[3]?.querySelectorAll('td')[1]?.textContent.trim() || '0'
-        };
+        let totalIn = '0';
+        let totalOut = '0';
+        if (rows[2]) {
+          const cells = rows[2].querySelectorAll('td');
+          if (cells[1]) totalIn = cells[1].textContent.trim();
+        }
+        if (rows[3]) {
+          const cells = rows[3].querySelectorAll('td');
+          if (cells[1]) totalOut = cells[1].textContent.trim();
+        }
+        return { totalIn, totalOut };
       });
 
-      // 한 달 데이터 (totalIn, totalOut)
-      const monthStart = moment().tz('Asia/Seoul').startOf('month').format('YYYY-MM-DD');
-      await viewFrame.$eval('#startDate', (el, value) => el.value = value, monthStart);
-      await viewFrame.$eval('#endDate', (el, value) => el.value = value, yesterdayDate);
-      await viewFrame.click('button.btn.btn-sm.btn-success');
-      await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 후 15초 대기
+      const results = dailyData.map(d => ({
+        site: '젠',
+        date: d.date,
+        join: d.join,
+        black: d.black,
+        charge: d.charge,
+        deposit: d.deposit,
+        withdraw: d.withdraw,
+        totalIn: parseInt(totals.totalIn.replace(/[^0-9]/g, '')) ? parseInt(totals.totalIn.replace(/[^0-9]/g, '')).toLocaleString('en-US') : '0',
+        totalOut: parseInt(totals.totalOut.replace(/[^0-9]/g, '')) ? parseInt(totals.totalOut.replace(/[^0-9]/g, '')).toLocaleString('en-US') : '0'
+      }));
+
+      return results;
+    } else if (index === 2) { // 빌드
+      // 로그인 입력
+      await page.type('input[name="uid"]', ID);
+      await page.type('input[name="pwd"]', PWD);
+      await page.type('input[name="captcha"]', '1111');
+
+      // 로그인 버튼 클릭
+      await Promise.all([
+        page.click('button[onclick="login()"]'),
+        page.waitForNavigation({ waitUntil: ['networkidle2', 'domcontentloaded'] })
+      ]);
+
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      // 로그인 성공 여부 확인
+      const currentUrl = page.url();
+      if (currentUrl.includes('proc/loginProcess.php')) {
+        console.error('index 2: 로그인 실패, URL:', currentUrl);
+        return dateRange.map(date => ({
+          site: '빌드',
+          date,
+          join: 0,
+          black: 0,
+          charge: 0,
+          deposit: '0',
+          withdraw: '0',
+          totalIn: '0',
+          totalOut: '0'
+        }));
+      }
+
+      // 프레임 찾기
+      const frames = page.frames();
+      let targetFrame = null;
+      let sidebarFrame = null;
+      for (const frame of frames) {
+        const hasTable = await frame.evaluate(() => {
+          const table = document.querySelector('.table.table-bordered tbody tr');
+          if (table) return true;
+          return false;
+        });
+        const hasSidebar = await frame.evaluate(() => {
+          const sidebar = document.querySelector('.nav.nav-pills.nav-sidebar');
+          if (sidebar) return true;
+          return false;
+        });
+        if (hasTable) targetFrame = frame;
+        if (hasSidebar) sidebarFrame = frame;
+      }
+
+      if (!targetFrame || !sidebarFrame) {
+        console.warn('index 2: 테이블 또는 사이드바 프레임 찾기 실패');
+        await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
+        return dateRange.map(date => ({
+          site: '빌드',
+          date,
+          join: 0,
+          black: 0,
+          charge: 0,
+          deposit: '0',
+          withdraw: '0',
+          totalIn: '0',
+          totalOut: '0'
+        }));
+      }
+
+      await targetFrame.waitForFunction(
+        () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+        { timeout: 30000 }
+      );
+
+      // 회원 데이터 크롤링
+      const cellData = await targetFrame.evaluate(() => {
+        const rows = document.querySelectorAll('.table.table-bordered tbody tr');
+        if (rows.length === 0) return [];
+        const data = [];
+        for (const row of rows) {
+          const cells = row.querySelectorAll('td');
+          let regDate = '';
+          let status = '';
+          if (cells[10]) regDate = cells[10].textContent.trim();
+          if (cells[12]) status = cells[12].textContent.trim();
+          data.push({ regDate, status });
+        }
+        return data;
+      });
+
+      if (cellData.length === 0) {
+        console.warn('index 2: /main.php 테이블 데이터 없음');
+      }
+
+      for (const res of cellData) {
+        if (!res.regDate) continue;
+        const regDate = res.regDate.slice(0, 10);
+        const dateIndex = dailyData.findIndex(d => d.date === regDate);
+        if (dateIndex !== -1) {
+          dailyData[dateIndex].join++;
+          if (res.status === '탈퇴') dailyData[dateIndex].black++;
+        }
+      }
+
+      // depositList_new.php 로드
+      const viewFrame = frames.find(f => {
+        const name = f.name();
+        if (name === 'ViewFrm') return true;
+        return false;
+      });
+      if (!viewFrame) {
+        console.warn('index 2: ViewFrm 프레임 찾기 실패');
+        await page.screenshot({ path: `depositList_screenshot_${index}_${Date.now()}.png` });
+        return dailyData.map(d => ({
+          site: '빌드',
+          date: d.date,
+          join: d.join,
+          black: d.black,
+          charge: 0,
+          deposit: '0',
+          withdraw: '0',
+          totalIn: '0',
+          totalOut: '0'
+        }));
+      }
+
+      await sidebarFrame.click('a[href="depositList_new.php"][target="ViewFrm"]');
+      await new Promise(resolve => setTimeout(resolve, 20000));
 
       await viewFrame.waitForFunction(
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
 
-      const monthTotals = await viewFrame.evaluate(() => {
-        const rows = document.querySelectorAll('.table.table-bordered tbody tr');
-        return {
-          totalIn: rows[2]?.querySelectorAll('td')[1]?.textContent.trim() || '0',
-          totalOut: rows[3]?.querySelectorAll('td')[1]?.textContent.trim() || '0'
-        };
+      // deposit 데이터 검색
+      await viewFrame.$eval('#startDate', (el, value) => el.value = value, startDate.format('YYYY-MM-DD'));
+      await viewFrame.$eval('#endDate', (el, value) => el.value = value, endDate.format('YYYY-MM-DD'));
+      await viewFrame.click('button.btn.btn-sm.btn-success');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      let searchSuccess = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await viewFrame.waitForFunction(
+            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+            { timeout: 60000 }
+          );
+          searchSuccess = true;
+          break;
+        } catch (e) {
+          console.warn(`index 2: deposit 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
+          const html = await viewFrame.content();
+          await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
+        }
+      }
+
+      const depositByDate = {};
+      const idsByDate = {};
+      dateRange.forEach(date => {
+        depositByDate[date] = 0;
+        idsByDate[date] = new Set();
       });
 
-      // 데이터 객체
-      const data = {
+      if (searchSuccess) {
+        const tbodyContent = await viewFrame.evaluate(() => document.querySelector('.table.table-bordered tbody').innerHTML);
+
+        let pageLinks = [];
+        let attempts = 3;
+        while (attempts--) {
+          try {
+            pageLinks = await viewFrame.evaluate(() => {
+              const links = document.querySelectorAll('.pagination a');
+              const pageNumbers = [];
+              for (const link of links) {
+                const match = link.href.match(/goPage\('(\d+)'\)/);
+                if (match) pageNumbers.push(match[1]);
+              }
+              return pageNumbers;
+            });
+            break;
+          } catch (e) {
+            console.warn(`index 2: deposit 페이지네이션 읽기 재시도 (${3 - attempts}/3):`, e.message);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+
+        const totalPages = pageLinks.length > 0 ? Math.max(...pageLinks.map(Number)) + 1 : 1;
+
+        for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+          if (pageNum > 0) {
+            await viewFrame.evaluate(page => window.goPage(page), pageNum);
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          }
+
+          let pageLoadSuccess = false;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              await viewFrame.waitForFunction(
+                () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+                { timeout: 60000 }
+              );
+              pageLoadSuccess = true;
+              break;
+            } catch (e) {
+              console.warn(`index 2: deposit 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
+              await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            }
+          }
+
+          if (!pageLoadSuccess) {
+            console.warn(`index 2: deposit 페이지 ${pageNum + 1} 테이블 로드 실패`);
+            await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            continue;
+          }
+
+          const pageData = await viewFrame.evaluate(() => {
+            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
+            const data = [];
+            for (const row of rows) {
+              const cells = row.querySelectorAll('td');
+              let id = '';
+              let amount = '0';
+              let processDate = '';
+              let status = '';
+              if (cells[1]) id = cells[1].textContent.trim();
+              if (cells[2]) amount = cells[2].textContent.trim();
+              if (cells[5]) processDate = cells[5].textContent.trim();
+              if (cells[6]) status = cells[6].textContent.trim().replace(/<[^>]+>/g, '');
+              data.push({ id, amount, processDate, status });
+            }
+            return data;
+          });
+
+          for (const res of pageData) {
+            if (!res.processDate || !res.id || res.status !== '완료') continue;
+            const processDate = res.processDate.slice(0, 10);
+            if (depositByDate[processDate] !== undefined) {
+              const amount = parseInt(res.amount.replace(/[^0-9]/g, '')) || 0;
+              depositByDate[processDate] += amount;
+              idsByDate[processDate].add(res.id);
+            }
+          }
+        }
+      } else {
+        console.warn('index 2: deposit 검색 결과 로드 실패');
+        await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
+      }
+
+      dailyData.forEach(d => {
+        d.charge = idsByDate[d.date] ? idsByDate[d.date].size : 0;
+        d.deposit = depositByDate[d.date] ? depositByDate[d.date].toLocaleString('en-US') : '0';
+      });
+
+      // withdrawList_new.php 로드
+      await sidebarFrame.click('a[href="withdrawList_new.php"][target="ViewFrm"]');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      await viewFrame.waitForFunction(
+        () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+        { timeout: 60000 }
+      );
+
+      // withdraw 데이터 검색
+      await viewFrame.$eval('#startDate', (el, value) => el.value = value, startDate.format('YYYY-MM-DD'));
+      await viewFrame.$eval('#endDate', (el, value) => el.value = value, endDate.format('YYYY-MM-DD'));
+      await viewFrame.click('button.btn.btn-sm.btn-success');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      searchSuccess = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await viewFrame.waitForFunction(
+            () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+            { timeout: 60000 }
+          );
+          searchSuccess = true;
+          break;
+        } catch (e) {
+          console.warn(`index 2: withdraw 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
+          await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
+        }
+      }
+
+      const withdrawByDate = {};
+      dateRange.forEach(date => withdrawByDate[date] = 0);
+
+      if (searchSuccess) {
+        let pageLinks = [];
+        let attempts = 3;
+        while (attempts--) {
+          try {
+            pageLinks = await viewFrame.evaluate(() => {
+              const links = document.querySelectorAll('.pagination a');
+              const pageNumbers = [];
+              for (const link of links) {
+                const match = link.href.match(/goPage\('(\d+)'\)/);
+                if (match) pageNumbers.push(match[1]);
+              }
+              return pageNumbers;
+            });
+            break;
+          } catch (e) {
+            console.warn(`index 2: withdraw 페이지네이션 읽기 재시도 (${3 - attempts}/3):`, e.message);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+
+        const totalPages = pageLinks.length > 0 ? Math.max(...pageLinks.map(Number)) + 1 : 1;
+
+        for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+          if (pageNum > 0) {
+            await viewFrame.evaluate(page => window.goPage(page), pageNum);
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 20000));
+          }
+
+          let pageLoadSuccess = false;
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              await viewFrame.waitForFunction(
+                () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+                { timeout: 60000 }
+              );
+              pageLoadSuccess = true;
+              break;
+            } catch (e) {
+              console.warn(`index 2: withdraw 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
+              await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            }
+          }
+
+          if (!pageLoadSuccess) {
+            console.warn(`index 2: withdraw 페이지 ${pageNum + 1} 테이블 로드 실패`);
+            await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
+            continue;
+          }
+
+          const pageData = await viewFrame.evaluate(() => {
+            const rows = document.querySelectorAll('.table.table-bordered tbody tr');
+            const data = [];
+            for (const row of rows) {
+              const cells = row.querySelectorAll('td');
+              let id = '';
+              let amount = '0';
+              let processDate = '';
+              let status = '';
+              if (cells[1]) id = cells[1].textContent.trim();
+              if (cells[3]) amount = cells[3].textContent.trim();
+              if (cells[5]) processDate = cells[5].textContent.trim();
+              if (cells[6]) status = cells[6].textContent.trim().replace(/<[^>]+>/g, '');
+              data.push({ id, amount, processDate, status });
+            }
+            return data;
+          });
+
+          for (const res of pageData) {
+            if (!res.processDate || !res.id || res.status !== '완료') continue;
+            const processDate = res.processDate.slice(0, 10);
+            if (withdrawByDate[processDate] !== undefined) {
+              const amount = parseInt(res.amount.replace(/[^0-9]/g, '')) || 0;
+              withdrawByDate[processDate] += amount;
+            }
+          }
+        }
+      } else {
+        console.warn('index 2: withdraw 검색 결과 로드 실패');
+        await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
+      }
+
+      dailyData.forEach(d => {
+        d.withdraw = withdrawByDate[d.date] ? withdrawByDate[d.date].toLocaleString('en-US') : '0';
+      });
+
+      // agen_cal.php 로드
+      await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      await viewFrame.waitForFunction(
+        () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+        { timeout: 60000 }
+      );
+
+      // totalIn, totalOut 검색
+      await viewFrame.$eval('#startDate', (el, value) => el.value = value, startDate.format('YYYY-MM-DD'));
+      await viewFrame.$eval('#endDate', (el, value) => el.value = value, endDate.format('YYYY-MM-DD'));
+      await viewFrame.click('button.btn.btn-sm.btn-success');
+      await new Promise(resolve => setTimeout(resolve, 20000));
+
+      await viewFrame.waitForFunction(
+        () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
+        { timeout: 60000 }
+      );
+
+      const totals = await viewFrame.evaluate(() => {
+        const rows = document.querySelectorAll('.table.table-bordered tbody tr');
+        let totalIn = '0';
+        let totalOut = '0';
+        if (rows[2]) {
+          const cells = rows[2].querySelectorAll('td');
+          if (cells[1]) totalIn = cells[1].textContent.trim();
+        }
+        if (rows[3]) {
+          const cells = rows[3].querySelectorAll('td');
+          if (cells[1]) totalOut = cells[1].textContent.trim();
+        }
+        return { totalIn, totalOut };
+      });
+
+      const results = dailyData.map(d => ({
         site: '빌드',
-        date: yesterdayDate,
-        join,
-        black,
-        charge: ids.size,
-        deposit: parseInt(yesterdayTotals.deposit.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US'),
-        withdraw: parseInt(yesterdayTotals.withdraw.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US'),
-        totalIn: parseInt(monthTotals.totalIn.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US'),
-        totalOut: parseInt(monthTotals.totalOut.replace(/[^0-9]/g, '') || '0').toLocaleString('en-US')
-      };
+        date: d.date,
+        join: d.join,
+        black: d.black,
+        charge: d.charge,
+        deposit: d.deposit,
+        withdraw: d.withdraw,
+        totalIn: parseInt(totals.totalIn.replace(/[^0-9]/g, '')) ? parseInt(totals.totalIn.replace(/[^0-9]/g, '')).toLocaleString('en-US') : '0',
+        totalOut: parseInt(totals.totalOut.replace(/[^0-9]/g, '')) ? parseInt(totals.totalOut.replace(/[^0-9]/g, '')).toLocaleString('en-US') : '0'
+      }));
 
-      return data;
-    } 
+      return results;
+    }
     return null;
   } catch (err) {
     console.error(`❌ site${index} 에러:`, err);
