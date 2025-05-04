@@ -1017,7 +1017,7 @@ async function crawlSite1(index) {
 
       // 데이터 객체
       const data = {
-        site: '헤븐 cscs', // 사이트 이름은 .env에서 가져오거나 별도 설정
+        site: '헤븐 king', // 사이트 이름은 .env에서 가져오거나 별도 설정
         date: yesterday,
         join,
         black,
