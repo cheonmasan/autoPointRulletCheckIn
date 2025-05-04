@@ -73,10 +73,6 @@ async function crawlSite4(index) {
         { timeout: 30000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const frameContent = await targetFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /main.php 프레임 HTML:', frameContent.slice(0, 500));
-
       const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       let join = 0;
       let black = 0;
@@ -124,10 +120,6 @@ async function crawlSite4(index) {
         { timeout: 60000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const depositContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /depositList_new.php HTML:', depositContent.slice(0, 500));
-
       // 어제 날짜 설정
       const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -156,12 +148,6 @@ async function crawlSite4(index) {
         await page.screenshot({ path: `depositList_new_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
-
-      // 디버깅: 검색 후 행 개수 및 HTML
-      const rowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-      console.log('index 1: 검색 후 테이블 행 개수:', rowCount);
-      const searchContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: 검색 후 /depositList_new.php HTML:', searchContent.slice(0, 500));
 
       const ids = new Set();
 
@@ -213,12 +199,6 @@ async function crawlSite4(index) {
           return null;
         }
 
-        // 디버깅: 페이지 HTML 및 행 개수
-        const pageContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-        console.log(`index 1: 페이지 ${pageNum + 1} HTML:`, pageContent.slice(0, 500));
-        const pageRowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-        console.log(`index 1: 페이지 ${pageNum + 1} 테이블 행 개수:`, pageRowCount);
-
         const pageData = await viewFrame.evaluate(() => {
           return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
             const cells = row.querySelectorAll('td');
@@ -251,10 +231,6 @@ async function crawlSite4(index) {
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
-
-      // 디버깅: 프레임 HTML 출력
-      const agenContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /agen_cal.php HTML:', agenContent.slice(0, 500));
 
       // 어제 데이터 (deposit, withdraw)
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -358,10 +334,6 @@ async function crawlSite4(index) {
         { timeout: 30000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const frameContent = await targetFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /main.php 프레임 HTML:', frameContent.slice(0, 500));
-
       const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       let join = 0;
       let black = 0;
@@ -409,10 +381,6 @@ async function crawlSite4(index) {
         { timeout: 60000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const depositContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /depositList.php HTML:', depositContent.slice(0, 500));
-
       // 어제 날짜 설정
       const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -441,12 +409,6 @@ async function crawlSite4(index) {
         await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
-
-      // 디버깅: 검색 후 행 개수 및 HTML
-      const rowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-      console.log('index 1: 검색 후 테이블 행 개수:', rowCount);
-      const searchContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: 검색 후 /depositList.php HTML:', searchContent.slice(0, 500));
 
       const ids = new Set();
 
@@ -498,12 +460,6 @@ async function crawlSite4(index) {
           return null;
         }
 
-        // 디버깅: 페이지 HTML 및 행 개수
-        const pageContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-        console.log(`index 1: 페이지 ${pageNum + 1} HTML:`, pageContent.slice(0, 500));
-        const pageRowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-        console.log(`index 1: 페이지 ${pageNum + 1} 테이블 행 개수:`, pageRowCount);
-
         const pageData = await viewFrame.evaluate(() => {
           return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
             const cells = row.querySelectorAll('td');
@@ -536,10 +492,6 @@ async function crawlSite4(index) {
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
-
-      // 디버깅: 프레임 HTML 출력
-      const agenContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /agen_cal.php HTML:', agenContent.slice(0, 500));
 
       // 어제 데이터 (deposit, withdraw)
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -643,10 +595,6 @@ async function crawlSite4(index) {
         { timeout: 30000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const frameContent = await targetFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /main.php 프레임 HTML:', frameContent.slice(0, 500));
-
       const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       let join = 0;
       let black = 0;
@@ -694,10 +642,6 @@ async function crawlSite4(index) {
         { timeout: 60000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const depositContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /depositList.php HTML:', depositContent.slice(0, 500));
-
       // 어제 날짜 설정
       const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -726,12 +670,6 @@ async function crawlSite4(index) {
         await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
-
-      // 디버깅: 검색 후 행 개수 및 HTML
-      const rowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-      console.log('index 1: 검색 후 테이블 행 개수:', rowCount);
-      const searchContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: 검색 후 /depositList.php HTML:', searchContent.slice(0, 500));
 
       const ids = new Set();
 
@@ -783,12 +721,6 @@ async function crawlSite4(index) {
           return null;
         }
 
-        // 디버깅: 페이지 HTML 및 행 개수
-        const pageContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-        console.log(`index 1: 페이지 ${pageNum + 1} HTML:`, pageContent.slice(0, 500));
-        const pageRowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-        console.log(`index 1: 페이지 ${pageNum + 1} 테이블 행 개수:`, pageRowCount);
-
         const pageData = await viewFrame.evaluate(() => {
           return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
             const cells = row.querySelectorAll('td');
@@ -821,10 +753,6 @@ async function crawlSite4(index) {
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
-
-      // 디버깅: 프레임 HTML 출력
-      const agenContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /agen_cal.php HTML:', agenContent.slice(0, 500));
 
       // 어제 데이터 (deposit, withdraw)
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);

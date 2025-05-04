@@ -4,6 +4,7 @@ const { scheduleTasks } = require('./schedules/cron');
 const { shuffle } = require('./utils/helpers');
 const { hookLogs } = require('./utils/loggerHelper');
 const { scrape } = require('./services/scraper');
+const { crawlSite0 } = require('./services/settlements/settlement0');
 const { crawlSite1 } = require('./services/settlements/settlement1');
 const { crawlSite2 } = require('./services/settlements/settlement2');
 const { crawlSite3 } = require('./services/settlements/settlement3');
@@ -94,6 +95,16 @@ ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
 });
 
 // 정산
+ipcMain.handle('run-settlement0', async () => {
+  const results = [];
+  for (let i = 1; i <= 3; i++) {
+    mainWindow.webContents.send('settlement-progress0', { current: i, total: 7 });
+    const res = await crawlSite0(i); // crawlSite 직접 호출
+    if (res) results.push(res);
+  }
+  return results;
+});
+
 ipcMain.handle('run-settlement1', async () => {
   const results = [];
   for (let i = 1; i <= 7; i++) {

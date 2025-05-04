@@ -82,9 +82,10 @@ async function crawlSite3(index) {
       const { deposit, withdraw, charge } = await page.evaluate(() => {
         const parseAmount = (text) => parseInt(text.replace(/[^0-9]/g, '') || '0');
         const rows = document.querySelectorAll('#dt_accnt tbody tr');
+
+        const ids = new Set();
         let deposit = 0;
         let withdraw = 0;
-        const ids = new Set();
 
         if (rows.length === 1 && rows[0].querySelector('.dataTables_empty')) {
           return { deposit, withdraw, charge: 0 };
@@ -97,9 +98,11 @@ async function crawlSite3(index) {
           const amount = parseAmount(cells[2]?.innerText || '0');
           const status = cells[4]?.innerText.trim();
 
-          if (id) ids.add(id);
           if (status.includes('[승인]')) {
-            if (type === '입금') deposit += amount;
+            if (type === '입금') {
+              if (id) ids.add(id);
+              deposit += amount;
+            }
             if (type === '출금') withdraw += amount;
           }
         });
@@ -176,10 +179,6 @@ async function crawlSite3(index) {
       // /user로 이동
       await page.goto(`${URL}/user`, { waitUntil: 'networkidle2' });
     
-      // 페이지 HTML 디버깅
-      const userPageContent = await page.evaluate(() => document.documentElement.outerHTML);
-      console.log(`index ${index}: /user 페이지 HTML:`, userPageContent.slice(0, 500));
-    
       // /user 테이블 데이터 추출 (네 제안 로직)
       let cellData = [];
       try {
@@ -219,10 +218,6 @@ async function crawlSite3(index) {
       // /money로 이동
       await page.goto(`${URL}/money`, { waitUntil: 'networkidle2' });
     
-      // 페이지 HTML 디버깅
-      const moneyPageContent = await page.evaluate(() => document.documentElement.outerHTML);
-      console.log(`index ${index}: /money 페이지 HTML:`, moneyPageContent.slice(0, 500));
-    
       // 어제 검색
       const yesterdayStart = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       const yesterdayEnd = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
@@ -260,9 +255,9 @@ async function crawlSite3(index) {
         dateInputSuccess = false;
       }
     
+      const ids = new Set();
       let deposit = 0;
       let withdraw = 0;
-      const ids = new Set();
     
       if (dateInputSuccess) {
         // 페이지 순회
@@ -288,8 +283,10 @@ async function crawlSite3(index) {
               const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
               if (regDate.slice(0,10) == yesterdayStart && regDate.slice(0,10) == yesterdayEnd && res.status === '완료') {
                 const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-                if (res.id) ids.add(res.id);
-                if (res.type === '충전') deposit += amount;
+                if (res.type === '충전') {
+                  if (res.id) ids.add(res.id);
+                  deposit += amount;
+                }
                 if (res.type === '환전') withdraw += amount;
               }
             });
@@ -494,9 +491,9 @@ async function crawlSite3(index) {
       await page.click('#fsearch > input.btn_submit');
       await new Promise(resolve => setTimeout(resolve, 1000));
     
-      const ids = new Set();
       let deposit = 0;
       let withdraw = 0;
+      const ids = new Set();
     
       // 테이블 데이터 (charge)
       const pageData = await page.evaluate(() => {
@@ -647,9 +644,9 @@ async function crawlSite3(index) {
       await page.click('#fsearch > input.btn_submit');
       await new Promise(resolve => setTimeout(resolve, 1000));
     
-      const ids = new Set();
       let deposit = 0;
       let withdraw = 0;
+      const ids = new Set();
     
       // 테이블 데이터 (charge)
       const pageData = await page.evaluate(() => {
@@ -800,9 +797,9 @@ async function crawlSite3(index) {
       await page.click('#fsearch > input.btn_submit');
       await new Promise(resolve => setTimeout(resolve, 1000));
     
-      const ids = new Set();
       let deposit = 0;
       let withdraw = 0;
+      const ids = new Set();
     
       // 테이블 데이터 (charge)
       const pageData = await page.evaluate(() => {
@@ -953,9 +950,9 @@ async function crawlSite3(index) {
       await page.click('#fsearch > input.btn_submit');
       await new Promise(resolve => setTimeout(resolve, 1000));
     
-      const ids = new Set();
       let deposit = 0;
       let withdraw = 0;
+      const ids = new Set();
     
       // 테이블 데이터 (charge)
       const pageData = await page.evaluate(() => {

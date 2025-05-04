@@ -40,10 +40,6 @@ async function crawlSite1(index) {
       // /user로 이동
       await page.goto(`${URL}/user`, { waitUntil: 'networkidle2' });
     
-      // 페이지 HTML 디버깅
-      const userPageContent = await page.evaluate(() => document.documentElement.outerHTML);
-      console.log(`index ${index}: /user 페이지 HTML:`, userPageContent.slice(0, 500));
-    
       // /user 테이블 데이터 추출 (네 제안 로직)
       let cellData = [];
       try {
@@ -82,10 +78,6 @@ async function crawlSite1(index) {
     
       // /money로 이동
       await page.goto(`${URL}/money`, { waitUntil: 'networkidle2' });
-    
-      // 페이지 HTML 디버깅
-      const moneyPageContent = await page.evaluate(() => document.documentElement.outerHTML);
-      console.log(`index ${index}: /money 페이지 HTML:`, moneyPageContent.slice(0, 500));
     
       // 어제 검색
       const yesterdayStart = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
@@ -152,8 +144,10 @@ async function crawlSite1(index) {
               const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
               if (regDate.slice(0,10) >= yesterdayStart && regDate.slice(0,10) <= yesterdayEnd && res.status === '완료') {
                 const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-                if (res.id) ids.add(res.id);
-                if (res.type === '충전') deposit += amount;
+                if (res.type === '충전') {
+                  if (res.id) ids.add(res.id);
+                  deposit += amount;
+                }
                 if (res.type === '환전') withdraw += amount;
               }
             });
@@ -374,7 +368,10 @@ async function crawlSite1(index) {
       await page.click('button.btn.green');
       await new Promise(resolve => setTimeout(resolve, 30000)); // 검색 후 30초 대기
 
-      let deposit = 0, withdraw = 0, ids = new Set();
+      let deposit = 0
+      let withdraw = 0
+      const ids = new Set();
+      
       let hasNextPage = true;
       while (hasNextPage) {
         const pageData = await page.evaluate(() => {
@@ -404,8 +401,10 @@ async function crawlSite1(index) {
           pageData.forEach(res => {
             if (res.processDate.slice(0, 10) === yesterday && res.status === '승인') {
               const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-              if (res.id) ids.add(res.id);
-              if (res.type === '입금') deposit += amount;
+              if (res.type === '입금') {
+                if (res.id) ids.add(res.id);
+                deposit += amount;
+              }
               if (res.type === '출금') withdraw += amount;
             }
           });
@@ -558,7 +557,10 @@ async function crawlSite1(index) {
       await page.click('button.btn.green');
       await new Promise(resolve => setTimeout(resolve, 30000)); // 검색 후 30초 대기
 
-      let deposit = 0, withdraw = 0, ids = new Set();
+      let deposit = 0
+      let withdraw = 0
+      const ids = new Set();
+      
       let hasNextPage = true;
       while (hasNextPage) {
         const pageData = await page.evaluate(() => {
@@ -588,8 +590,10 @@ async function crawlSite1(index) {
           pageData.forEach(res => {
             if (res.processDate.slice(0, 10) === yesterday && res.status === '승인') {
               const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-              if (res.id) ids.add(res.id);
-              if (res.type === '입금') deposit += amount;
+              if (res.type === '입금') {
+                if (res.id) ids.add(res.id);
+                deposit += amount;
+              }
               if (res.type === '출금') withdraw += amount;
             }
           });
@@ -745,7 +749,10 @@ async function crawlSite1(index) {
       await page.click('button.btn.green');
       await new Promise(resolve => setTimeout(resolve, 5000)); // 검색 후 5초 대기
 
-      let deposit = 0, withdraw = 0, ids = new Set();
+      let deposit = 0
+      let withdraw = 0
+      const ids = new Set();
+      
       let hasNextPage = true;
       while (hasNextPage) {
         const pageData = await page.evaluate(() => {
@@ -775,8 +782,10 @@ async function crawlSite1(index) {
           pageData.forEach(res => {
             if (res.processDate.slice(0, 10) === yesterday && res.status === '승인') {
               const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-              if (res.id) ids.add(res.id);
-              if (res.type === '입금') deposit += amount;
+              if (res.type === '입금') {
+                if (res.id) ids.add(res.id);
+                deposit += amount;
+              }
               if (res.type === '출금처리') withdraw += amount;
             }
           });
@@ -932,7 +941,10 @@ async function crawlSite1(index) {
       await page.click('button.btn.green');
       await new Promise(resolve => setTimeout(resolve, 5000)); // 검색 후 5초 대기
 
-      let deposit = 0, withdraw = 0, ids = new Set();
+      let deposit = 0
+      let withdraw = 0
+      const ids = new Set();
+      
       let hasNextPage = true;
       while (hasNextPage) {
         const pageData = await page.evaluate(() => {
@@ -962,8 +974,10 @@ async function crawlSite1(index) {
           pageData.forEach(res => {
             if (res.processDate.slice(0, 10) === yesterday && res.status === '승인') {
               const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-              if (res.id) ids.add(res.id);
-              if (res.type === '입금') deposit += amount;
+              if (res.type === '입금') {
+                if (res.id) ids.add(res.id);
+                deposit += amount;
+              }
               if (res.type === '출금처리') withdraw += amount;
             }
           });
@@ -1071,10 +1085,6 @@ async function crawlSite1(index) {
             { timeout: 30000 }
           );
     
-          // 디버깅: 프레임 HTML 출력
-          const frameContent = await targetFrame.evaluate(() => document.documentElement.outerHTML);
-          console.log('index 1: /main.php 프레임 HTML:', frameContent.slice(0, 500));
-    
           const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
           let join = 0;
           let black = 0;
@@ -1122,10 +1132,6 @@ async function crawlSite1(index) {
             { timeout: 60000 }
           );
     
-          // 디버깅: 프레임 HTML 출력
-          const depositContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-          console.log('index 1: /depositList.php HTML:', depositContent.slice(0, 500));
-    
           // 어제 날짜 설정
           const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
           await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -1154,12 +1160,6 @@ async function crawlSite1(index) {
             await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
             return null;
           }
-    
-          // 디버깅: 검색 후 행 개수 및 HTML
-          const rowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-          console.log('index 1: 검색 후 테이블 행 개수:', rowCount);
-          const searchContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-          console.log('index 1: 검색 후 /depositList.php HTML:', searchContent.slice(0, 500));
     
           const ids = new Set();
     
@@ -1211,12 +1211,6 @@ async function crawlSite1(index) {
               return null;
             }
     
-            // 디버깅: 페이지 HTML 및 행 개수
-            const pageContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-            console.log(`index 1: 페이지 ${pageNum + 1} HTML:`, pageContent.slice(0, 500));
-            const pageRowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-            console.log(`index 1: 페이지 ${pageNum + 1} 테이블 행 개수:`, pageRowCount);
-    
             const pageData = await viewFrame.evaluate(() => {
               return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
                 const cells = row.querySelectorAll('td');
@@ -1249,10 +1243,6 @@ async function crawlSite1(index) {
             () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
             { timeout: 60000 }
           );
-    
-          // 디버깅: 프레임 HTML 출력
-          const agenContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-          console.log('index 1: /agen_cal.php HTML:', agenContent.slice(0, 500));
     
           // 어제 데이터 (deposit, withdraw)
           await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -1356,10 +1346,6 @@ async function crawlSite1(index) {
         { timeout: 30000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const frameContent = await targetFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /main.php 프레임 HTML:', frameContent.slice(0, 500));
-
       const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       let join = 0;
       let black = 0;
@@ -1407,10 +1393,6 @@ async function crawlSite1(index) {
         { timeout: 60000 }
       );
 
-      // 디버깅: 프레임 HTML 출력
-      const depositContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /depositList_new.php HTML:', depositContent.slice(0, 500));
-
       // 어제 날짜 설정
       const yesterdayDate = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
@@ -1439,12 +1421,6 @@ async function crawlSite1(index) {
         await page.screenshot({ path: `depositList_new_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
-
-      // 디버깅: 검색 후 행 개수 및 HTML
-      const rowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-      console.log('index 1: 검색 후 테이블 행 개수:', rowCount);
-      const searchContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: 검색 후 /depositList_new.php HTML:', searchContent.slice(0, 500));
 
       const ids = new Set();
 
@@ -1496,12 +1472,6 @@ async function crawlSite1(index) {
           return null;
         }
 
-        // 디버깅: 페이지 HTML 및 행 개수
-        const pageContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-        console.log(`index 1: 페이지 ${pageNum + 1} HTML:`, pageContent.slice(0, 500));
-        const pageRowCount = await viewFrame.evaluate(() => document.querySelectorAll('.table.table-bordered tbody tr').length);
-        console.log(`index 1: 페이지 ${pageNum + 1} 테이블 행 개수:`, pageRowCount);
-
         const pageData = await viewFrame.evaluate(() => {
           return Array.from(document.querySelectorAll('.table.table-bordered tbody tr')).map(row => {
             const cells = row.querySelectorAll('td');
@@ -1534,10 +1504,6 @@ async function crawlSite1(index) {
         () => document.querySelectorAll('.table.table-bordered tbody tr').length > 0,
         { timeout: 60000 }
       );
-
-      // 디버깅: 프레임 HTML 출력
-      const agenContent = await viewFrame.evaluate(() => document.documentElement.outerHTML);
-      console.log('index 1: /agen_cal.php HTML:', agenContent.slice(0, 500));
 
       // 어제 데이터 (deposit, withdraw)
       await viewFrame.$eval('#startDate', (el, value) => el.value = value, yesterdayDate);
