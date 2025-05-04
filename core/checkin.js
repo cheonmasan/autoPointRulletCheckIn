@@ -69,15 +69,11 @@ const runCheckIn = async (start, end) => {
                         });
                         if (!checkinButton.asElement()) {
                             logger('checkin', `ID=${ID_DATA2[i]} 이미 출석 완료`);
-                            await gotoPage(page, 'https://onairslot.com/');
-                            await closePopup(page);
                             await logout(page);
                             return;
                         }
                         await checkinButton.click();
                         await new Promise((page) => setTimeout(page, TIME));
-                        await gotoPage(page, 'https://onairslot.com/');
-                        await closePopup(page);
                         await logout(page);
                     });
 

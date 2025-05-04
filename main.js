@@ -18,7 +18,7 @@ let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 1080,
+    height: 1200,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -79,6 +79,17 @@ ipcMain.handle('run-roulette', async () => {
   const { runRullet } = require('./core/roulette');
   const result = await runRullet();
   updateStatus('roulette', false);
+  return result;
+});
+
+
+// 룰렛
+ipcMain.handle('run-lotto', async () => {
+  hookLogs('lotto');
+  updateStatus('lotto', true);
+  const { runLotto } = require('./core/lotto');
+  const result = await runLotto();
+  updateStatus('lotto', false);
   return result;
 });
 

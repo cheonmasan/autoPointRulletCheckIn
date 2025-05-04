@@ -20,21 +20,23 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f1f1f1; }
+    h1 { font-size: 15px;}
   </style>
 </head>
 <body>
   <div>
-    <div id="tab1" class="tab active" onclick="switchTab(1)">출석,포인트마트</div>
+    <div id="tab1" class="tab active" onclick="switchTab(1)">출석,포마,룰렛,로또</div>
     <div id="tab2" class="tab" onclick="switchTab(2)">활동왕 찾기</div>
     <div id="tab3" class="tab" onclick="switchTab(3)">정산</div>
   </div>
 
   <div id="content1" class="tab-content active">
-    <h1>✅ 자동 출석체크, 자동 포인트마트 구매, 자동 룰렛 3번 돌리기</h1>
+    <h1>✅ 자동 출석체크, 자동 포인트마트 구매, 자동 룰렛 3번 돌리기, 로또</h1>
     <div>
       <button id="checkin-btn">출석체크 <span id="checkin-status" class="status">❌</span></button>
       <button id="pointmart-btn">포인트마트 <span id="pointmart-status" class="status">❌</span></button>
       <button id="roulette-btn">룰렛 <span id="roulette-status" class="status">❌</span></button>
+      <button id="lotto-btn">로또 <span id="lotto-status" class="status">❌</span></button>
     </div>
     <h3>📗 룰렛 로그</h3>
     <textarea id="roulette-log" readonly></textarea>
@@ -42,6 +44,8 @@
     <textarea id="pointmart-log" readonly></textarea>
     <h3>📘 출석 로그</h3>
     <textarea id="checkin-log" readonly></textarea>
+    <h3>📕 로또 로그</h3>
+    <textarea id="lotto-log" readonly></textarea>
   </div>
 
   <div id="content2" class="tab-content">

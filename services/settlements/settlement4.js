@@ -63,7 +63,6 @@ async function crawlSite4(index) {
         console.warn('index 1: 테이블 또는 사이드바 프레임 찾기 실패');
         const frameNames = frames.map(f => f.name() || f.url()).join(', ');
         console.log('index 1: 사용 가능한 프레임:', frameNames);
-        await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -107,7 +106,6 @@ async function crawlSite4(index) {
       const viewFrame = frames.find(f => f.name() === 'ViewFrm');
       if (!viewFrame) {
         console.warn('index 1: ViewFrm 프레임 찾기 실패');
-        await page.screenshot({ path: `depositList_new_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -145,7 +143,6 @@ async function crawlSite4(index) {
 
       if (!searchSuccess) {
         console.warn('index 1: 검색 결과 로드 실패');
-        await page.screenshot({ path: `depositList_new_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -195,7 +192,6 @@ async function crawlSite4(index) {
 
         if (!pageLoadSuccess) {
           console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 실패`);
-          await page.screenshot({ path: `depositList_new_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
           return null;
         }
 
@@ -321,7 +317,6 @@ async function crawlSite4(index) {
         console.warn('index 1: 테이블 또는 사이드바 프레임 찾기 실패');
         const frameNames = frames.map(f => f.name() || f.url()).join(', ');
         console.log('index 1: 사용 가능한 프레임:', frameNames);
-        await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -365,7 +360,6 @@ async function crawlSite4(index) {
       const viewFrame = frames.find(f => f.name() === 'ViewFrm');
       if (!viewFrame) {
         console.warn('index 1: ViewFrm 프레임 찾기 실패');
-        await page.screenshot({ path: `depositList_new_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -403,7 +397,6 @@ async function crawlSite4(index) {
 
       if (!searchSuccess) {
         console.warn('index 1: 검색 결과 로드 실패');
-        await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -453,7 +446,6 @@ async function crawlSite4(index) {
 
         if (!pageLoadSuccess) {
           console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 실패`);
-          await page.screenshot({ path: `depositList_new_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
           return null;
         }
 
@@ -579,7 +571,6 @@ async function crawlSite4(index) {
         console.warn('index 1: 테이블 또는 사이드바 프레임 찾기 실패');
         const frameNames = frames.map(f => f.name() || f.url()).join(', ');
         console.log('index 1: 사용 가능한 프레임:', frameNames);
-        await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -623,7 +614,6 @@ async function crawlSite4(index) {
       const viewFrame = frames.find(f => f.name() === 'ViewFrm');
       if (!viewFrame) {
         console.warn('index 1: ViewFrm 프레임 찾기 실패');
-        await page.screenshot({ path: `depositList_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -661,7 +651,6 @@ async function crawlSite4(index) {
 
       if (!searchSuccess) {
         console.warn('index 1: 검색 결과 로드 실패');
-        await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         return null;
       }
 
@@ -711,7 +700,6 @@ async function crawlSite4(index) {
 
         if (!pageLoadSuccess) {
           console.warn(`index 1: 페이지 ${pageNum + 1} 테이블 로드 실패`);
-          await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
           return null;
         }
 

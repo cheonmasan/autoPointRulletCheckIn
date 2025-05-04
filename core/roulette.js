@@ -24,7 +24,6 @@ const runRullet = async () => {
             await closePopup(page);
             await login(page, ID_DATA2[i]);
             await new Promise((page) => setTimeout(page, TIME));
-            await closePopup(page);
             try {
                 for (let j = 0; j < 3; j++) {
                     await gotoPage(page, 'https://onairslot.com/bbs/board.php?bo_table=roulette');
@@ -36,7 +35,6 @@ const runRullet = async () => {
                 logger('roulette', `runRullet ${ID_DATA2[i]} ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")} 완료`);
                 await gotoPage(page, 'https://onairslot.com/');
                 await new Promise((page) => setTimeout(page, TIME));
-                await closePopup(page);
                 await logout(page);
                 await new Promise((page) => setTimeout(page, TIME));
             } catch (e) {

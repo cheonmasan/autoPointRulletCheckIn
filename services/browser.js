@@ -20,7 +20,6 @@ const closePopup = async (page) => {
         await retry(async () => {
             const closeButtons = await page.$$('button.hd_pops_close');
             if (closeButtons.length === 0) {
-                console.log('팝업 없음, 스킵');
                 return;
             }
             for (const button of closeButtons) {

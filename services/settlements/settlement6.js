@@ -110,7 +110,6 @@ async function crawlSite6(index) {
 
       if (!targetFrame || !sidebarFrame) {
         console.warn('index 1: 테이블 또는 사이드바 프레임 찾기 실패');
-        await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
         return dateRange.map(date => ({
           site: '젠',
           date,
@@ -167,7 +166,6 @@ async function crawlSite6(index) {
       });
       if (!viewFrame) {
         console.warn('index 1: ViewFrm 프레임 찾기 실패');
-        await page.screenshot({ path: `depositList_screenshot_${index}_${Date.now()}.png` });
         return dailyData.map(d => ({
           site: '젠',
           date: d.date,
@@ -207,7 +205,6 @@ async function crawlSite6(index) {
         } catch (e) {
           console.warn(`index 1: deposit 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
           const html = await viewFrame.content();
-          await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         }
       }
 
@@ -262,13 +259,11 @@ async function crawlSite6(index) {
               break;
             } catch (e) {
               console.warn(`index 1: deposit 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
-              await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             }
           }
 
           if (!pageLoadSuccess) {
             console.warn(`index 1: deposit 페이지 ${pageNum + 1} 테이블 로드 실패`);
-            await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             continue;
           }
 
@@ -302,7 +297,6 @@ async function crawlSite6(index) {
         }
       } else {
         console.warn('index 1: deposit 검색 결과 로드 실패');
-        await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
       }
 
       dailyData.forEach(d => {
@@ -336,7 +330,6 @@ async function crawlSite6(index) {
           break;
         } catch (e) {
           console.warn(`index 1: withdraw 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
-          await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
         }
       }
 
@@ -385,13 +378,11 @@ async function crawlSite6(index) {
               break;
             } catch (e) {
               console.warn(`index 1: withdraw 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
-              await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             }
           }
 
           if (!pageLoadSuccess) {
             console.warn(`index 1: withdraw 페이지 ${pageNum + 1} 테이블 로드 실패`);
-            await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             continue;
           }
 
@@ -424,7 +415,6 @@ async function crawlSite6(index) {
         }
       } else {
         console.warn('index 1: withdraw 검색 결과 로드 실패');
-        await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
       }
 
       dailyData.forEach(d => {
@@ -531,7 +521,6 @@ async function crawlSite6(index) {
 
       if (!targetFrame || !sidebarFrame) {
         console.warn('index 2: 테이블 또는 사이드바 프레임 찾기 실패');
-        await page.screenshot({ path: `main_php_screenshot_${index}_${Date.now()}.png` });
         return dateRange.map(date => ({
           site: '빌드',
           date,
@@ -588,7 +577,6 @@ async function crawlSite6(index) {
       });
       if (!viewFrame) {
         console.warn('index 2: ViewFrm 프레임 찾기 실패');
-        await page.screenshot({ path: `depositList_screenshot_${index}_${Date.now()}.png` });
         return dailyData.map(d => ({
           site: '빌드',
           date: d.date,
@@ -628,7 +616,6 @@ async function crawlSite6(index) {
         } catch (e) {
           console.warn(`index 2: deposit 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
           const html = await viewFrame.content();
-          await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
         }
       }
 
@@ -683,13 +670,11 @@ async function crawlSite6(index) {
               break;
             } catch (e) {
               console.warn(`index 2: deposit 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
-              await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             }
           }
 
           if (!pageLoadSuccess) {
             console.warn(`index 2: deposit 페이지 ${pageNum + 1} 테이블 로드 실패`);
-            await page.screenshot({ path: `depositList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             continue;
           }
 
@@ -723,7 +708,6 @@ async function crawlSite6(index) {
         }
       } else {
         console.warn('index 2: deposit 검색 결과 로드 실패');
-        await page.screenshot({ path: `depositList_search_screenshot_${index}_${Date.now()}.png` });
       }
 
       dailyData.forEach(d => {
@@ -757,7 +741,6 @@ async function crawlSite6(index) {
           break;
         } catch (e) {
           console.warn(`index 2: withdraw 검색 결과 대기 재시도 (${attempt}/3):`, e.message);
-          await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
         }
       }
 
@@ -806,13 +789,11 @@ async function crawlSite6(index) {
               break;
             } catch (e) {
               console.warn(`index 2: withdraw 페이지 ${pageNum + 1} 테이블 로드 재시도 (${attempt}/3):`, e.message);
-              await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             }
           }
 
           if (!pageLoadSuccess) {
             console.warn(`index 2: withdraw 페이지 ${pageNum + 1} 테이블 로드 실패`);
-            await page.screenshot({ path: `withdrawList_page${pageNum + 1}_screenshot_${index}_${Date.now()}.png` });
             continue;
           }
 
@@ -845,7 +826,6 @@ async function crawlSite6(index) {
         }
       } else {
         console.warn('index 2: withdraw 검색 결과 로드 실패');
-        await page.screenshot({ path: `withdrawList_search_screenshot_${index}_${Date.now()}.png` });
       }
 
       dailyData.forEach(d => {

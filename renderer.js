@@ -2,14 +2,17 @@ window.addEventListener('DOMContentLoaded', () => {
   const checkinBtn = document.getElementById('checkin-btn');
   const pointmartBtn = document.getElementById('pointmart-btn');
   const rouletteBtn = document.getElementById('roulette-btn');
+  const lottoBtn = document.getElementById('lotto-btn');
 
   const checkinStatus = document.getElementById('checkin-status');
   const pointmartStatus = document.getElementById('pointmart-status');
   const rouletteStatus = document.getElementById('roulette-status');
+  const lottoStatus = document.getElementById('lotto-status');
 
   const checkinLog = document.getElementById('checkin-log');
   const pointmartLog = document.getElementById('pointmart-log');
   const rouletteLog = document.getElementById('roulette-log');
+  const lottoLog = document.getElementById('lotto-log');
 
   checkinBtn.addEventListener('click', async () => {
     await window.electronAPI.runCheckIn();
@@ -21,6 +24,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   rouletteBtn.addEventListener('click', async () => {
     await window.electronAPI.runRoulette();
+  });
+
+  lottoBtn.addEventListener('click', async () => {
+    await window.electronAPI.runLotto();
   });
 
   window.electronAPI.onLog((type, message) => {
@@ -38,6 +45,10 @@ window.addEventListener('DOMContentLoaded', () => {
         rouletteLog.value += logLine;
         rouletteLog.scrollTop = rouletteLog.scrollHeight;
         break;
+      case 'lotto':
+        lottoLog.value += logLine;
+        lottoLog.scrollTop = lottoLog.scrollHeight;
+        break;
       default:
         break;
     }
@@ -53,6 +64,9 @@ window.addEventListener('DOMContentLoaded', () => {
         break;
       case 'roulette':
         rouletteStatus.textContent = status;
+        break;
+      case 'lotto':
+        lottoStatus.textContent = status;
         break;
       default:
         break;
