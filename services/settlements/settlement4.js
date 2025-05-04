@@ -219,9 +219,6 @@ async function crawlSite4(index) {
         });
       }
 
-      // 디버깅: ids.size 출력
-      console.log('index 1: 입금완료 ID 수 (charge):', ids.size);
-
       // /agen_cal.php로 이동
       await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
       await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
@@ -480,9 +477,6 @@ async function crawlSite4(index) {
         });
       }
 
-      // 디버깅: ids.size 출력
-      console.log('index 1: 입금완료 ID 수 (charge):', ids.size);
-
       // /agen_cal.php로 이동
       await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
       await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
@@ -740,9 +734,6 @@ async function crawlSite4(index) {
           }
         });
       }
-
-      // 디버깅: ids.size 출력
-      console.log('index 1: 입금완료 ID 수 (charge):', ids.size);
 
       // /agen_cal.php로 이동
       await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');

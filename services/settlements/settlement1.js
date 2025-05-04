@@ -287,8 +287,6 @@ async function crawlSite1(index) {
 
           const screenshot = await captchaElement.screenshot({ encoding: 'base64' });
 
-          console.log('screenshot')
-
           // 2Captcha로 해결
           const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len:4, max_len: 4, regsense: 1 });
           console.table(solution)
@@ -322,6 +320,7 @@ async function crawlSite1(index) {
           }
         }
       }
+
       // /GameUser/List (회원 데이터)
       await page.goto(`${URL}/GameUser/List`, { waitUntil: 'networkidle2', timeout: 60000 });
       await new Promise(resolve => setTimeout(resolve, 10000)); // 페이지 로딩 10초 대기
@@ -634,7 +633,7 @@ async function crawlSite1(index) {
 
       // 데이터 객체
       const data = {
-        site: '뱅크파트너 cscs', // 사이트 이름은 .env에서 가져오거나 별도 설정
+        site: '뱅크파트너 king', // 사이트 이름은 .env에서 가져오거나 별도 설정
         date: yesterday,
         join,
         black,
@@ -1231,9 +1230,6 @@ async function crawlSite1(index) {
             });
           }
     
-          // 디버깅: ids.size 출력
-          console.log('index 1: 입금완료 ID 수 (charge):', ids.size);
-    
           // /agen_cal.php로 이동
           await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
           await new Promise(resolve => setTimeout(resolve, 15000)); // 15초 대기
@@ -1491,9 +1487,6 @@ async function crawlSite1(index) {
           }
         });
       }
-
-      // 디버깅: ids.size 출력
-      console.log('index 1: 입금완료 ID 수 (charge):', ids.size);
 
       // /agen_cal.php로 이동
       await sidebarFrame.click('a[href="agen_cal.php"][target="ViewFrm"]');
