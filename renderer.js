@@ -113,6 +113,15 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('settlementStatus5').className = 'complete';
   });
 
+  document.getElementById('settlementBtn6')?.addEventListener('click', async () => {
+    document.getElementById('settlementStatus6').textContent = '진행중...';
+    document.getElementById('settlementStatus6').className = 'progress';
+    const results = await window.electronAPI.runSettlement6();
+    results.forEach(data => addSettlementRow('settlementBody6', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+    document.getElementById('settlementStatus6').textContent = '완료!';
+    document.getElementById('settlementStatus6').className = 'complete';
+  });
+
   window.electronAPI.onSettlementProgress0((progress) => {
     console.log('Settlement0 Progress:', progress);
     document.getElementById('settlementStatus0').textContent = `진행중... (${progress.current}/${progress.total})`;
@@ -147,6 +156,12 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log('Settlement5 Progress:', progress);
     document.getElementById('settlementStatus5').textContent = `진행중... (${progress.current}/${progress.total})`;
     document.getElementById('settlementStatus5').className = 'progress';
+  });
+
+  window.electronAPI.onSettlementProgress6((progress) => {
+    console.log('Settlement6 Progress:', progress);
+    document.getElementById('settlementStatus6').textContent = `진행중... (${progress.current}/${progress.total})`;
+    document.getElementById('settlementStatus6').className = 'progress';
   });
 
   setDefaultDates();

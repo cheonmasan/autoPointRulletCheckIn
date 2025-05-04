@@ -13,7 +13,7 @@ async function crawlSite0(index) {
     return null;
   }
 
-  const browser = await puppeteer.launch({ headless: 'new' });
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   page.setViewport({ width: 1920, height: 1080 })
 

@@ -10,6 +10,7 @@ const { crawlSite2 } = require('./services/settlements/settlement2');
 const { crawlSite3 } = require('./services/settlements/settlement3');
 const { crawlSite4 } = require('./services/settlements/settlement4');
 const { crawlSite5 } = require('./services/settlements/settlement5');
+const { crawlSite6 } = require('./services/settlements/settlement6');
 const path = require('path');
 
 let mainWindow;
@@ -107,7 +108,7 @@ ipcMain.handle('run-settlement0', async () => {
 
 ipcMain.handle('run-settlement1', async () => {
   const results = [];
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 5; i++) {
     mainWindow.webContents.send('settlement-progress1', { current: i, total: 7 });
     const res = await crawlSite1(i); // crawlSite 직접 호출
     if (res) results.push(res);
@@ -151,6 +152,16 @@ ipcMain.handle('run-settlement5', async () => {
   for (let i = 1; i <= 3; i++) {
     mainWindow.webContents.send('settlement-progress5', { current: i, total: 3 });
     const res = await crawlSite5(i); // crawlSite 직접 호출
+    if (res) results.push(res);
+  }
+  return results;
+});
+
+ipcMain.handle('run-settlement6', async () => {
+  const results = [];
+  for (let i = 1; i <= 2; i++) {
+    mainWindow.webContents.send('settlement-progress6', { current: i, total: 3 });
+    const res = await crawlSite6(i); // crawlSite 직접 호출
     if (res) results.push(res);
   }
   return results;

@@ -89,7 +89,7 @@ const runCheckIn = async (start, end) => {
                         global.isSend = false;
                         i = randomData;
                     } else {
-                        if (i < 20) {
+                        if (i < 10) {
                             count = Math.floor(Math.random() * 1) + 1;
                             await new Promise((page) => setTimeout(page, count * 60000));
                         } else {
