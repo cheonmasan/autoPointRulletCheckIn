@@ -33,8 +33,23 @@ function createWindow() {
   
   mainWindow.webContents.on('did-finish-load', async() => {
     scheduleTasks(updateStatus);
+
+    // 로또와 탐지 작업을 동시에 실행
+    await Promise.all([
+      (async () => {
+        updateStatus('lotto', true);
+        await runLotto();
+        updateStatus('lotto', false);
+      })(),
+      (async () => {
+        updateStatus('detection', true);
+        await runDetection();
+        updateStatus('detection', false);
+      })()
+    ]);
   });
 }
+
 
 function updateStatus(type, isRunning) {
   if (mainWindow) {
@@ -84,7 +99,6 @@ ipcMain.handle('run-roulette', async () => {
   updateStatus('roulette', false);
   return result;
 });
-
 
 // 로또
 ipcMain.handle('run-lotto', async () => {

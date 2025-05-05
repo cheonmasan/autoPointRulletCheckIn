@@ -114,47 +114,30 @@ function extractKorean(text) {
   return text.replace(/[^가-힣\s]/g, '').trim(); // 한글과 공백만 남기기
 }
 
-// 5분마다 실행
-setInterval(async () => {
-  logger('detection',"🔍 게시판 탐색 시작...");
-  for (const url of boardUrls) {
-    const detectedPosts = await detectKeywordsFromBoard(url);
-    if (detectedPosts.length > 0) {
-      // 탐지된 게시물 출력
-      detectedPosts.forEach(post => {
-        // logger('detection',`아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
-      });
-
-      // 탐지된 게시글을 텔레그램으로 전송
-      for (const post of detectedPosts) {
-        await sendPostToTelegram(post); // 텔레그램으로 게시글 전송
-      }
-    } else {
-      logger('detection',`✅ ${url}에서 탐지된 게시물이 없습니다.`);
-    }
-  }
-}, 5 * 60 * 1000); // 5분마다 실행
-
-// 즉시 실행
 async function runDetection() {
   const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
   logger('detection', `runDetection 매크로 시작 한국 시간: ${koreaTime}`);
-  logger('detection',"🔍 즉시 게시판 탐색 시작...");
-    try{
-      for (const url of boardUrls) {
-        const detectedPosts = await detectKeywordsFromBoard(url);
-        if (detectedPosts.length > 0) {
-          // 탐지된 게시물 출력
-          detectedPosts.forEach(post => {
-            // logger('detection',`아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
-          });
-        } else {
-          logger('detection',`✅ ${url}에서 탐지된 게시물이 없습니다.`);
+  logger('detection', "🔍 즉시 게시판 탐색 시작...");
+  try {
+    for (const url of boardUrls) {
+      const detectedPosts = await detectKeywordsFromBoard(url);
+      if (detectedPosts.length > 0) {
+        // 탐지된 게시물 출력
+        detectedPosts.forEach(post => {
+          logger('detection', `아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
+        });
+
+        // 탐지된 게시글을 텔레그램으로 전송
+        for (const post of detectedPosts) {
+          await sendPostToTelegram(post); // 텔레그램으로 게시글 전송
         }
+      } else {
+        logger('detection', `✅ ${url}에서 탐지된 게시물이 없습니다.`);
       }
-    }catch (error) {
-      logger('detection',"🔍 즉시 게시판 탐색 중 오류 발생:", error);
     }
+  } catch (error) {
+    logger('detection', "🔍 즉시 게시판 탐색 중 오류 발생:", error);
+  }
 }
 
 module.exports = { runDetection };

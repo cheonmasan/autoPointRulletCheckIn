@@ -3,6 +3,7 @@ const moment = require('moment-timezone');
 const { runCheckIn } = require('../core/checkin');
 const { runPointMart } = require('../core/pointMart');
 const { runRoulette } = require('../core/roulette');
+const { runDetection } = require('../core/detection');
 const { checkinGetData } = require('../services/scraper');
 const { sendMessage } = require('../services/telegram');
 const { logger } = require('../utils/loggerHelper')
@@ -71,6 +72,12 @@ const scheduleTasks = (updateStatus) => {
         updateStatus('checkin', true)
          await runCheckIn(92, 113);
         updateStatus('checkin', false)
+    });
+
+    cron.schedule("*/5 * * * *", async () => {
+        updateStatus('detection', true)
+         await runDetection();
+        updateStatus('detection', false)
     });
 };
 
