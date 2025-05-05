@@ -145,7 +145,7 @@ const runPointMart = async () => {
         global.running1 = false;
         global.isSend1 = false;
     } catch (e) {
-        logger('pointmart', `포인트 마트 치명적인 에러 발생1: ${e.message}, Stack=${e.stack}`);
+        logger('pointmart', `포인트 마트 치명적인 에러 발생3: ${e.message}, Stack=${e.stack}`);
         global.running1 = false;
         global.isSend1 = false;
     } finally {
