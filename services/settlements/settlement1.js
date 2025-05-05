@@ -711,8 +711,6 @@ async function crawlSite1(index) {
         cellData = [{ status: 'N/A', regDate: 'N/A' }];
       }
 
-      console.log('celldata', cellData)
-
       const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       let join = 0, black = 0;
       if (cellData.length === 1 && cellData[0].status === 'N/A' && cellData[0].regDate === 'N/A') {
@@ -767,7 +765,7 @@ async function crawlSite1(index) {
           break; // 데이터 없으면 즉시 루프 종료
         } else {
           pageData.forEach(res => {
-            if (res.processDate.slice(0, 10) === yesterday && res.status === '승인') {
+            if (res.processDate.slice(0, 10) === yesterday && res.status === '완료') {
               const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
               if (res.type === '입금') {
                 if (res.id) ids.add(res.id);
@@ -803,8 +801,8 @@ async function crawlSite1(index) {
         if (!row) return { totalIn: '0', totalOut: '0' };
         const cells = row.querySelectorAll('td');
         return {
-          totalIn: cells[2]?.textContent.trim() || '0',
-          totalOut: cells[3]?.textContent.trim() || '0'
+          totalIn: cells[1]?.textContent.trim() || '0',
+          totalOut: cells[2]?.textContent.trim() || '0'
         };
       });
 
@@ -899,8 +897,6 @@ async function crawlSite1(index) {
         cellData = [{ status: 'N/A', regDate: 'N/A' }];
       }
 
-      console.log('celldata', cellData)
-
       const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
       let join = 0, black = 0;
       if (cellData.length === 1 && cellData[0].status === 'N/A' && cellData[0].regDate === 'N/A') {
@@ -955,7 +951,7 @@ async function crawlSite1(index) {
           break; // 데이터 없으면 즉시 루프 종료
         } else {
           pageData.forEach(res => {
-            if (res.processDate.slice(0, 10) === yesterday && res.status === '승인') {
+            if (res.processDate.slice(0, 10) === yesterday && res.status === '완료') {
               const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
               if (res.type === '입금') {
                 if (res.id) ids.add(res.id);
@@ -991,8 +987,8 @@ async function crawlSite1(index) {
         if (!row) return { totalIn: '0', totalOut: '0' };
         const cells = row.querySelectorAll('td');
         return {
-          totalIn: cells[2]?.textContent.trim() || '0',
-          totalOut: cells[3]?.textContent.trim() || '0'
+          totalIn: cells[1]?.textContent.trim() || '0',
+          totalOut: cells[2]?.textContent.trim() || '0'
         };
       });
 
