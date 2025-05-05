@@ -25,150 +25,143 @@ async function crawlSite3(index) {
     await page.goto(URL, { waitUntil: 'networkidle2' });
 
     if (index === 1) { //꼬부기
-      await page.type('#hdqts_id', ID);
-      await page.type('#hdqts_pwd', PWD);
-      await Promise.all([
-        page.click('form#login_form button[type="submit"]'),
-        page.waitForNavigation({ waitUntil: 'networkidle2' })
-      ]);
-
-      // /user/list로 이동, 데이터 정렬
-      await page.goto(`${URL}/user/list`, { waitUntil: 'networkidle2' });
-      await page.waitForSelector('#dt_list tbody tr');
-      await page.click('#dt_list > thead > tr > th:nth-child(11)');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await page.click('#dt_list > thead > tr > th:nth-child(11)');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
-      // const yesterday = '2024-11-21';
-
-      // /user/list 테이블 데이터 추출
-      const cellData = await page.evaluate(() => {
-        return Array.from(document.querySelectorAll('#dt_list tbody tr')).map(row => {
-          const cells = row.querySelectorAll('td');
-          return { day: cells[10]?.innerText.trim(), state: cells[1]?.innerText.trim() };
-        });
-      });
-
-      let join = 0;
-      let black = 0;
-      cellData.forEach(res => {
-        if (res.day.slice(0, 10) === yesterday) {
-          join++;
-          if (res.state === '정지')
-            black++;
-        }
-      });
-
-      // /user/account로 이동
-      await page.goto(`${URL}/user/account`, { waitUntil: 'networkidle2' });
-      await page.waitForSelector('#dt_accnt tbody tr');
-
-      // 어제 날짜 검색
-      const yesterdayStart = moment().tz('Asia/Seoul').subtract(1, 'days').startOf('day').format('YYYY/MM/DD HH:mm:ss');
-      // const yesterdayStart = '2024/11/21 00:00:00';
-      const yesterdayEnd = moment().tz('Asia/Seoul').subtract(1, 'days').endOf('day').format('YYYY/MM/DD HH:mm:ss');
-      // const yesterdayEnd = '2024/11/21 23:59:59';
-      const yesterdayRange = `${yesterdayStart} - ${yesterdayEnd}`;
-
-      await page.evaluate((range) => {
-        document.querySelector('#src_accnt_reg_dt').value = range;
-      }, yesterdayRange);
-      await page.click('button[onclick="dt_accnt();"]');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 어제 데이터 추출 (테이블에서 [승인]만)
-      const { deposit, withdraw, charge } = await page.evaluate(() => {
-        const parseAmount = (text) => parseInt(text.replace(/[^0-9]/g, '') || '0');
-        const rows = document.querySelectorAll('#dt_accnt tbody tr');
-
-        const ids = new Set();
-        let deposit = 0;
-        let withdraw = 0;
-
-        if (rows.length === 1 && rows[0].querySelector('.dataTables_empty')) {
-          return { deposit, withdraw, charge: 0 };
-        }
-
-        rows.forEach(row => {
-          const cells = row.querySelectorAll('td');
-          const id = cells[0]?.innerText.trim();
-          const type = cells[1]?.innerText.trim();
-          const amount = parseAmount(cells[2]?.innerText || '0');
-          const status = cells[4]?.innerText.trim();
-
-          if (status.includes('[승인]')) {
-            if (type === '입금') {
-              if (id) ids.add(id);
-              deposit += amount;
+          await page.type('#hdqts_id', ID);
+          await page.type('#hdqts_pwd', PWD);
+          await Promise.all([
+            page.click('form#login_form button[type="submit"]'),
+            page.waitForNavigation({ waitUntil: 'networkidle2' })
+          ]);
+    
+          // /user/list로 이동, 데이터 정렬
+          await page.goto(`${URL}/user/list`, { waitUntil: 'networkidle2' });
+          await page.waitForSelector('#dt_list tbody tr');
+          await page.click('#dt_list > thead > tr > th:nth-child(11)');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await page.click('#dt_list > thead > tr > th:nth-child(11)');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+    
+          const yesterday = moment().tz('Asia/Seoul').subtract(1, 'days').format('YYYY-MM-DD');
+    
+          // /user/list 테이블 데이터 추출
+          const cellData = await page.evaluate(() => {
+            return Array.from(document.querySelectorAll('#dt_list tbody tr')).map(row => {
+              const cells = row.querySelectorAll('td');
+              return { day: cells[10]?.innerText.trim(), state: cells[1]?.innerText.trim() };
+            });
+          });
+    
+          let join = 0;
+          let black = 0;
+          cellData.forEach(res => {
+            if (res.day.slice(0, 10) === yesterday) {
+              join++;
+              if (res.state === '정지') black++;
             }
-            if (type === '출금') withdraw += amount;
+          });
+    
+          // /user/account로 이동
+          await page.goto(`${URL}/user/account`, { waitUntil: 'networkidle2' });
+          await page.waitForSelector('#dt_accnt tbody tr');
+    
+          // 어제 날짜 검색
+          const yesterdayStart = moment().tz('Asia/Seoul').subtract(1, 'days').startOf('day').format('YYYY/MM/DD HH:mm:ss');
+          const yesterdayEnd = moment().tz('Asia/Seoul').subtract(1, 'days').endOf('day').format('YYYY/MM/DD HH:mm:ss');
+          const yesterdayRange = `${yesterdayStart} - ${yesterdayEnd}`;
+    
+          await page.evaluate((range) => {
+            document.querySelector('#src_accnt_reg_dt').value = range;
+          }, yesterdayRange);
+          await page.click('button[onclick="dt_accnt();"]');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+    
+          // 상단 입금/출금 금액 추출
+          const deposit = await page.evaluate(() => {
+            const amount = document.querySelector('#path_user_chrg_amt')?.innerText || '0';
+            return parseInt(amount.replace(/[^0-9]/g, '') || '0');
+          });
+    
+          const withdraw = await page.evaluate(() => {
+            const amount = document.querySelector('#path_user_exchg_amt')?.innerText || '0';
+            return parseInt(amount.replace(/[^0-9]/g, '') || '0');
+          });
+    
+          // 테이블 순회 및 페이징 처리 (charge 계산)
+          let hasNextPage = true;
+          const ids = new Set();
+    
+          while (hasNextPage) {
+            const pageData = await page.evaluate(() => {
+              const rows = document.querySelectorAll('#dt_accnt tbody tr');
+              return Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                  id: cells[0]?.innerText.trim(),
+                  status: cells[4]?.innerText.trim(),
+                };
+              });
+            });
+    
+            pageData.forEach(res => {
+              if (res.status.includes('[승인]') && res.id) {
+                ids.add(res.id); // 중복 제거
+              }
+            });
+    
+            const nextPageButton = await page.$('#dt_accnt_next');
+            const isDisabled = await page.evaluate(el => el.classList.contains('disabled'), nextPageButton);
+    
+            if (nextPageButton && !isDisabled) {
+              await Promise.all([
+                nextPageButton.click(),
+                page.waitForNavigation({ waitUntil: 'networkidle2' }),
+              ]);
+              await page.waitForSelector('#dt_accnt tbody tr');
+            } else {
+              hasNextPage = false;
+            }
           }
-        });
-
-        return { deposit, withdraw, charge: ids.size };
-      });
-
-      // 한 달 날짜 검색
-      const monthStart = moment().tz('Asia/Seoul').startOf('month').format('YYYY/MM/DD HH:mm:ss');
-      // const monthStart = '2024/11/01 00:00:00';
-      const monthEnd = moment().tz('Asia/Seoul').subtract(1, 'days').endOf('day').format('YYYY/MM/DD HH:mm:ss');
-      // const monthEnd = '2024/11/30 23:59:59';
-      const monthRange = `${monthStart} - ${monthEnd}`;
-
-      await page.evaluate((range) => {
-        document.querySelector('#src_accnt_reg_dt').value = range;
-      }, monthRange);
-      await page.click('button[onclick="dt_accnt();"]');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 한 달 데이터 추출 (테이블에서 [승인]만)
-      const { totalIn, totalOut } = await page.evaluate(() => {
-        const parseAmount = (text) => parseInt(text.replace(/[^0-9]/g, '') || '0');
-        const rows = document.querySelectorAll('#dt_accnt tbody tr');
-        let totalIn = 0;
-        let totalOut = 0;
-
-        if (rows.length === 1 && rows[0].querySelector('.dataTables_empty')) {
-          return { totalIn, totalOut };
-        }
-
-        rows.forEach(row => {
-          const cells = row.querySelectorAll('td');
-          const type = cells[1]?.innerText.trim();
-          const amount = parseAmount(cells[2]?.innerText || '0');
-          const status = cells[4]?.innerText.trim();
-
-          if (status.includes('[승인]')) {
-            if (type === '입금') totalIn += amount;
-            if (type === '출금') totalOut += amount;
-          }
-        });
-
-        return { totalIn, totalOut };
-      });
-
-      // 데이터 객체 반환
-      const data = {
-        site: '꼬부기',
-        date: yesterday,
-        join,
-        black,
-        charge,
-        deposit,
-        withdraw,
-        totalIn,
-        totalOut
-      };
-
-      data.deposit = (data.deposit || 0).toLocaleString('en-US');
-      data.withdraw = (data.withdraw || 0).toLocaleString('en-US');
-      data.totalIn = (data.totalIn || 0).toLocaleString('en-US');
-      data.totalOut = (data.totalOut || 0).toLocaleString('en-US');
-
-      return data;
-    } else if (index === 2) { //니모
+    
+          // 1일~어제 데이터 크롤링 (상단 금액 추출)
+          const monthStart = moment().tz('Asia/Seoul').startOf('month').format('YYYY/MM/DD HH:mm:ss');
+          const monthEnd = moment().tz('Asia/Seoul').subtract(1, 'days').endOf('day').format('YYYY/MM/DD HH:mm:ss');
+          const monthRange = `${monthStart} - ${monthEnd}`;
+    
+          await page.evaluate((range) => {
+            document.querySelector('#src_accnt_reg_dt').value = range;
+          }, monthRange);
+          await page.click('button[onclick="dt_accnt();"]');
+          await new Promise(resolve => setTimeout(resolve, 3000));
+    
+          const totalIn = await page.evaluate(() => {
+            const amount = document.querySelector('#path_user_chrg_amt')?.innerText || '0';
+            return parseInt(amount.replace(/[^0-9]/g, '') || '0');
+          });
+    
+          const totalOut = await page.evaluate(() => {
+            const amount = document.querySelector('#path_user_exchg_amt')?.innerText || '0';
+            return parseInt(amount.replace(/[^0-9]/g, '') || '0');
+          });
+    
+          // 데이터 객체 반환
+          const data = {
+            site: '꼬부기',
+            date: yesterday,
+            join,          // 어제 가입자 수
+            black,         // 어제 블랙리스트 수
+            charge: ids.size, // 어제~어제의 고유 아이디 수
+            deposit,       // 어제~어제의 총 입금
+            withdraw,      // 어제~어제의 총 출금
+            totalIn,       // 1일~어제의 총 입금
+            totalOut,      // 1일~어제의 총 출금
+          };
+    
+          data.deposit = (data.deposit || 0).toLocaleString('en-US');
+          data.withdraw = (data.withdraw || 0).toLocaleString('en-US');
+          data.totalIn = (data.totalIn || 0).toLocaleString('en-US');
+          data.totalOut = (data.totalOut || 0).toLocaleString('en-US');
+    
+          return data;
+        } else if (index === 2) { //니모
       await page.type('input[placeholder="ID"]', ID);
       await page.type('input[placeholder="PASSWORD"]', PWD);
       await Promise.all([
