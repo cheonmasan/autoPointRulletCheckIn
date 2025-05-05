@@ -3,16 +3,19 @@ window.addEventListener('DOMContentLoaded', () => {
   const pointmartBtn = document.getElementById('pointmart-btn');
   const rouletteBtn = document.getElementById('roulette-btn');
   const lottoBtn = document.getElementById('lotto-btn');
+  const detectionBtn = document.getElementById('detection-btn');
 
   const checkinStatus = document.getElementById('checkin-status');
   const pointmartStatus = document.getElementById('pointmart-status');
   const rouletteStatus = document.getElementById('roulette-status');
   const lottoStatus = document.getElementById('lotto-status');
+  const detectionStatus = document.getElementById('detection-status');
 
   const checkinLog = document.getElementById('checkin-log');
   const pointmartLog = document.getElementById('pointmart-log');
   const rouletteLog = document.getElementById('roulette-log');
   const lottoLog = document.getElementById('lotto-log');
+  const detectionLog = document.getElementById('detection-log');
 
   checkinBtn.addEventListener('click', async () => {
     await window.electronAPI.runCheckIn();
@@ -28,6 +31,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   lottoBtn.addEventListener('click', async () => {
     await window.electronAPI.runLotto();
+  });
+
+  detectionBtn.addEventListener('click', async () => {
+    await window.electronAPI.runDetection();
   });
 
   window.electronAPI.onLog((type, message) => {
@@ -49,6 +56,10 @@ window.addEventListener('DOMContentLoaded', () => {
         lottoLog.value += logLine;
         lottoLog.scrollTop = lottoLog.scrollHeight;
         break;
+      case 'detection':
+        detectionLog.value += logLine;
+        detectionLog.scrollTop = detectionLog.scrollHeight;
+        break;
       default:
         break;
     }
@@ -67,6 +78,9 @@ window.addEventListener('DOMContentLoaded', () => {
         break;
       case 'lotto':
         lottoStatus.textContent = status;
+        break;
+      case 'detection':
+        detectionStatus.textContent = status;
         break;
       default:
         break;

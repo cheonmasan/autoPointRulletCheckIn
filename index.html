@@ -21,6 +21,8 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f1f1f1; }
     h1 { font-size: 15px;}
+    .blue-text { color: blue; font-weight: bold; }
+    .red-text { color: red; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -37,6 +39,7 @@
       <button id="pointmart-btn">포인트마트 <span id="pointmart-status" class="status">❌</span></button>
       <button id="roulette-btn">룰렛 <span id="roulette-status" class="status">❌</span></button>
       <button id="lotto-btn">로또 <span id="lotto-status" class="status">❌</span></button>
+      <button id="detection-btn">탐지 <span id="detection-status" class="status">❌</span></button>
     </div>
     <h3>📗 룰렛 로그</h3>
     <textarea id="roulette-log" readonly></textarea>
@@ -46,6 +49,8 @@
     <textarea id="checkin-log" readonly></textarea>
     <h3>📕 로또 로그</h3>
     <textarea id="lotto-log" readonly></textarea>
+    <h3>📋 탐지 로그</h3>
+    <textarea id="detection-log" readonly></textarea>
   </div>
 
   <div id="content2" class="tab-content">
@@ -169,6 +174,11 @@
       [site, date, join, black, charge, deposit, withdraw, totalIn, totalOut].forEach(text => {
         const td = document.createElement('td');
         td.textContent = text;
+
+         // 입금/총입금은 파란색, 출금/총출금은 빨간색
+        if (index === 5 || index === 7) td.classList.add('blue-text'); // 입금, 총입금
+        if (index === 6 || index === 8) td.classList.add('red-text');  // 출금, 총출금
+
         row.appendChild(td);
       });
       tbody.appendChild(row);

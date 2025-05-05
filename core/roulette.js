@@ -4,7 +4,7 @@ const { login, logout, gotoPage, closePopup } = require('../services/browser');
 const { getConfig } = require('../utils/config');
 const { logger } = require('../utils/loggerHelper')
 
-const runRullet = async () => {
+const runRoulette = async () => {
     const browser = await puppeteer.launch({
         headless: 'new',
         protocolTimeout: 600000 * 25
@@ -51,4 +51,4 @@ const runRullet = async () => {
     }
 };
 
-module.exports = { runRullet };
+module.exports = { runRoulette };

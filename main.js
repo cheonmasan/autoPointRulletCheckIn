@@ -12,6 +12,11 @@ const { crawlSite4 } = require('./services/settlements/settlement4');
 const { crawlSite5 } = require('./services/settlements/settlement5');
 const { crawlSite6 } = require('./services/settlements/settlement6');
 const path = require('path');
+const { runCheckIn } = require('./core/checkin');
+const { runPointMart } = require('./core/pointMart');
+const { runRoulette } = require('./core/roulette');
+const { runLotto } = require('./core/lotto');
+const { runDetection } = require('./core/detection');
 
 let mainWindow;
 
@@ -26,26 +31,32 @@ function createWindow() {
   });
 
   mainWindow.loadFile('index.html');
+  
+  mainWindow.webContents.on('did-finish-load', async() => {
+    scheduleTasks(updateStatus);
+  });
 }
 
 function updateStatus(type, isRunning) {
   if (mainWindow) {
+    console.warn(`⚠️⚠️⚠️⚠️⚠️`);
     mainWindow.webContents.send('status-update', { type, status: isRunning ? '✅' : '❌' });
+  } else {
+      console.warn(`⚠️ Main window is not ready. Cannot update status for: ${type}`);
   }
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  initConfig();
-  const { ID_DATA1, ID_DATA2, ID_DATA3 } = getConfig();
-  shuffle(ID_DATA1, 1);
-  shuffle(ID_DATA2, 2);
-  shuffle(ID_DATA3, 3);
-  scheduleTasks(updateStatus);
+app.whenReady().then(async () => {
+    createWindow();
+    initConfig();
+    const { ID_DATA1, ID_DATA2, ID_DATA3 } = getConfig();
+    shuffle(ID_DATA1, 1);
+    shuffle(ID_DATA2, 2);
+    shuffle(ID_DATA3, 3);
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
 });
 
 app.on('window-all-closed', () => {
@@ -56,7 +67,6 @@ app.on('window-all-closed', () => {
 ipcMain.handle('run-checkin', async () => {
   hookLogs('checkin');
   updateStatus('checkin', true);
-  const { runCheckIn } = require('./core/checkin');
   const result = await runCheckIn(92, 113);
   updateStatus('checkin', false);
   return result;
@@ -66,7 +76,6 @@ ipcMain.handle('run-checkin', async () => {
 ipcMain.handle('run-pointmart', async () => {
   hookLogs('pointmart');
   updateStatus('pointmart', true);
-  const { runPointMart } = require('./core/pointMart');
   const result = await runPointMart();
   updateStatus('pointmart', false);
   return result;
@@ -76,20 +85,27 @@ ipcMain.handle('run-pointmart', async () => {
 ipcMain.handle('run-roulette', async () => {
   hookLogs('roulette');
   updateStatus('roulette', true);
-  const { runRullet } = require('./core/roulette');
-  const result = await runRullet();
+  const result = await runRoulette();
   updateStatus('roulette', false);
   return result;
 });
 
 
-// 룰렛
+// 로또
 ipcMain.handle('run-lotto', async () => {
   hookLogs('lotto');
   updateStatus('lotto', true);
-  const { runLotto } = require('./core/lotto');
   const result = await runLotto();
   updateStatus('lotto', false);
+  return result;
+});
+
+// 탐지
+ipcMain.handle('run-detection', async () => {
+  hookLogs('detection');
+  updateStatus('detection', true);
+  const result = await runDetection();
+  updateStatus('detection', false);
   return result;
 });
 
