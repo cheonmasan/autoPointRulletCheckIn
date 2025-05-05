@@ -81,6 +81,8 @@ const buyPoint = async (page, id, i, nextTime) => {
 };
 
 const runPointMart = async () => {
+    const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
+    logger('pointmart', `runPointMart 매크로 시작 한국 시간: ${koreaTime}`);
     let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
     if (10 <= time && time <= 19) {
         sendMessage("포인트구매 매크로 시작했습니다.");

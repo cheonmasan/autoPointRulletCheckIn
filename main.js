@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const { getConfig, initConfig } = require('./utils/config');
 const { scheduleTasks } = require('./schedules/cron');
 const { shuffle } = require('./utils/helpers');
-const { hookLogs } = require('./utils/loggerHelper');
 const { scrape } = require('./services/scraper');
 const { crawlSite0 } = require('./services/settlements/settlement0');
 const { crawlSite1 } = require('./services/settlements/settlement1');
@@ -39,7 +38,6 @@ function createWindow() {
 
 function updateStatus(type, isRunning) {
   if (mainWindow) {
-    console.warn(`⚠️⚠️⚠️⚠️⚠️`);
     mainWindow.webContents.send('status-update', { type, status: isRunning ? '✅' : '❌' });
   } else {
       console.warn(`⚠️ Main window is not ready. Cannot update status for: ${type}`);
@@ -65,7 +63,6 @@ app.on('window-all-closed', () => {
 
 // 출석 체크
 ipcMain.handle('run-checkin', async () => {
-  hookLogs('checkin');
   updateStatus('checkin', true);
   const result = await runCheckIn(92, 113);
   updateStatus('checkin', false);
@@ -74,7 +71,6 @@ ipcMain.handle('run-checkin', async () => {
 
 // 포인트 마트
 ipcMain.handle('run-pointmart', async () => {
-  hookLogs('pointmart');
   updateStatus('pointmart', true);
   const result = await runPointMart();
   updateStatus('pointmart', false);
@@ -83,7 +79,6 @@ ipcMain.handle('run-pointmart', async () => {
 
 // 룰렛
 ipcMain.handle('run-roulette', async () => {
-  hookLogs('roulette');
   updateStatus('roulette', true);
   const result = await runRoulette();
   updateStatus('roulette', false);
@@ -93,7 +88,6 @@ ipcMain.handle('run-roulette', async () => {
 
 // 로또
 ipcMain.handle('run-lotto', async () => {
-  hookLogs('lotto');
   updateStatus('lotto', true);
   const result = await runLotto();
   updateStatus('lotto', false);
@@ -102,7 +96,6 @@ ipcMain.handle('run-lotto', async () => {
 
 // 탐지
 ipcMain.handle('run-detection', async () => {
-  hookLogs('detection');
   updateStatus('detection', true);
   const result = await runDetection();
   updateStatus('detection', false);

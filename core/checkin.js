@@ -20,6 +20,8 @@ const retry = async (fn, maxRetries = 3, delay = 5000) => {
 };
 
 const runCheckIn = async (start, end) => {
+    const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
+    logger('checkin', `runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
     if (global.isSend == true) {
         sendMessage("고장난 출석매크로 재시작완료!");
     }

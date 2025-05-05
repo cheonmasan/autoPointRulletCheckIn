@@ -55,6 +55,8 @@ const saveCommentThisWeek = (id) => {
 
 // ===== MAIN =====
 const runLotto = async () => {
+  const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
+  logger('lotto', `runLotto 매크로 시작 한국 시간: ${koreaTime}`);
   const browser = await puppeteer.launch({
     headless: 'new',
     protocolTimeout: 600000 * 25

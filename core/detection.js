@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment-timezone'); // moment 라이브러리 추가
 const { sendPostToTelegram } = require('../services/telegram'); // 텔레그램 전송 함수 가져오기
+const { logger } = require('../utils/loggerHelper')
 
 // 게시판 URL 리스트
 const boardUrls = [
@@ -80,7 +81,7 @@ async function detectKeywordsFromBoard(url) {
       // 부적절한 키워드 필터링
       const containsInappropriate = containsInappropriateKeywords(title) || containsInappropriateKeywords(content);
       if (containsInappropriate) {
-        console.log(`🚨 부적절한 게시글 탐지: 게시판: ${type} 아이디: ${id}, 닉네임: ${nickname}, 제목: ${title}, 내용: ${content}, 링크: ${link}`);
+        logger('detection', `🚨 부적절한 게시글 탐지: 게시판: ${type} 아이디: ${id}, 닉네임: ${nickname}, 제목: ${title}, 내용: ${content}, 링크: ${link}`);
         await sendPostToTelegram({ type, id, nickname, title, content, date, link, originalTitle, originalContent });
         detectedPosts.push({ type, id, nickname, title, content, date, link, originalTitle, originalContent });
       }
@@ -115,13 +116,13 @@ function extractKorean(text) {
 
 // 5분마다 실행
 setInterval(async () => {
-  console.log("🔍 게시판 탐색 시작...");
+  logger('detection',"🔍 게시판 탐색 시작...");
   for (const url of boardUrls) {
     const detectedPosts = await detectKeywordsFromBoard(url);
     if (detectedPosts.length > 0) {
       // 탐지된 게시물 출력
       detectedPosts.forEach(post => {
-        // console.log(`아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
+        // logger('detection',`아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
       });
 
       // 탐지된 게시글을 텔레그램으로 전송
@@ -129,29 +130,31 @@ setInterval(async () => {
         await sendPostToTelegram(post); // 텔레그램으로 게시글 전송
       }
     } else {
-      console.log(`✅ ${url}에서 탐지된 게시물이 없습니다.`);
+      logger('detection',`✅ ${url}에서 탐지된 게시물이 없습니다.`);
     }
   }
 }, 5 * 60 * 1000); // 5분마다 실행
 
 // 즉시 실행
 async function runDetection() {
-  console.log("🔍 즉시 게시판 탐색 시작...");
-  try{
-    for (const url of boardUrls) {
-      const detectedPosts = await detectKeywordsFromBoard(url);
-      if (detectedPosts.length > 0) {
-        // 탐지된 게시물 출력
-        detectedPosts.forEach(post => {
-          // console.log(`아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
-        });
-      } else {
-        console.log(`✅ ${url}에서 탐지된 게시물이 없습니다.`);
+  const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
+  logger('detection', `runDetection 매크로 시작 한국 시간: ${koreaTime}`);
+  logger('detection',"🔍 즉시 게시판 탐색 시작...");
+    try{
+      for (const url of boardUrls) {
+        const detectedPosts = await detectKeywordsFromBoard(url);
+        if (detectedPosts.length > 0) {
+          // 탐지된 게시물 출력
+          detectedPosts.forEach(post => {
+            // logger('detection',`아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
+          });
+        } else {
+          logger('detection',`✅ ${url}에서 탐지된 게시물이 없습니다.`);
+        }
       }
+    }catch (error) {
+      logger('detection',"🔍 즉시 게시판 탐색 중 오류 발생:", error);
     }
-  }catch (error) {
-    console.error("🔍 즉시 게시판 탐색 중 오류 발생:", error);
-  }
 }
 
 module.exports = { runDetection };
