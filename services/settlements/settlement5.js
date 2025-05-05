@@ -92,6 +92,12 @@ async function crawlSite5(index) {
       while (hasNextPage) {
         const pageData = await page.evaluate(() => {
           const rows = document.querySelectorAll('#dt_accnt tbody tr');
+
+          // 데이터가 없는 경우 처리
+          if (rows.length === 1 && rows[0].classList.contains('dataTables_empty')) {
+            return []; // 빈 배열 반환
+          }
+
           return Array.from(rows).map(row => {
             const cells = row.querySelectorAll('td');
             return {
@@ -101,8 +107,15 @@ async function crawlSite5(index) {
           });
         });
 
+        // 데이터가 없는 경우 처리
+        if (!pageData.length) {
+          console.log('데이터가 없습니다.');
+          hasNextPage = false;
+          break;
+        }
+
         pageData.forEach(res => {
-          if (res.status.includes('[승인]') && res.id) {
+          if (res.status && res.status.includes('[승인]') && res.id) {
             ids.add(res.id); // 중복 제거
           }
         });
