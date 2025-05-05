@@ -110,7 +110,7 @@ ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
 ipcMain.handle('run-settlement0', async () => {
   const results = [];
   for (let i = 1; i <= 3; i++) {
-    mainWindow.webContents.send('settlement-progress0', { current: i, total: 7 });
+    mainWindow.webContents.send('settlement-progress0', { current: i, total: 3 });
     const res = await crawlSite0(i);
     if (res) results.push(res);
   }
@@ -120,7 +120,7 @@ ipcMain.handle('run-settlement0', async () => {
 ipcMain.handle('run-settlement1', async () => {
   const results = [];
   for (let i = 1; i <= 5; i++) {
-    mainWindow.webContents.send('settlement-progress1', { current: i, total: 7 });
+    mainWindow.webContents.send('settlement-progress1', { current: i, total: 5 });
     const res = await crawlSite1(i);
     if (res) results.push(res);
   }
