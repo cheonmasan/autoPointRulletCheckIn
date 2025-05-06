@@ -13,7 +13,7 @@ const boardUrls = [
 
 // 부적절한 키워드 리스트
 const inappropriateKeywords = [
-  "섹파", "미친페이", "텔비포함", "조건만남"
+  "섹파", "미친페이", "텔비포함", "조건만남","조건 만남","조건녀","조건 녀","평타이상"
 ];
 
 // 키워드 필터링 함수
@@ -36,29 +36,32 @@ async function detectKeywordsFromBoard(url) {
     const detectedPosts = []; // 항상 배열로 초기화
 
     for (const element of elements) {
-      let title, link, nickname, id, date, content, type;
+      let title, link, nickname, id, date, content, type, wrId;
 
       if (url.includes('free')) {
-        type = '자유게시판';
+        type = 'free';
         title = $(element).find('a.na-subject').text().trim();
         link = $(element).find('a.na-subject').attr('href');
         nickname = $(element).find('a.sv_member').text().trim();
         id = new URL($(element).find('a.sv_member').attr('href'), url).searchParams.get('mb_id');
         date = $(element).find('.nw-6').text().replace(/등록일/g, '').replace(/\s+/g, ' ').trim();
+        wrId = new URL(link, url).searchParams.get('wr_id');
       } else if (url.includes('greet')) {
-        type = '가입인사게시판';
+        type = 'greet';
         title = $(element).find('a.na-subject').text().trim();
         link = $(element).find('a.na-subject').attr('href');
         nickname = $(element).find('a.sv_member').text().trim();
         id = new URL($(element).find('a.sv_member').attr('href'), url).searchParams.get('mb_id');
         date = $(element).find('.nw-6').text().replace(/등록일/g, '').replace(/\s+/g, ' ').trim();
+        wrId = new URL(link, url).searchParams.get('wr_id');
       } else if (url.includes('slot')) {
-        type = '슬롯리뷰게시판';
+        type = 'slot';
         title = $(element).find('a.na-subject').text().trim();
         link = $(element).find('a.na-subject').attr('href');
         nickname = $(element).find('a.sv_member').text().trim();
         id = new URL($(element).find('a.sv_member').attr('href'), url).searchParams.get('mb_id');
         date = $(element).find('.nw-6').text().replace(/등록일/g, '').replace(/\s+/g, ' ').trim();
+        wrId = new URL(link, url).searchParams.get('wr_id');
       }
 
       // 게시글 내용 가져오기
@@ -81,9 +84,9 @@ async function detectKeywordsFromBoard(url) {
       // 부적절한 키워드 필터링
       const containsInappropriate = containsInappropriateKeywords(title) || containsInappropriateKeywords(content);
       if (containsInappropriate) {
-        logger('detection', `🚨 부적절한 게시글 탐지: 게시판: ${type} 아이디: ${id}, 닉네임: ${nickname}, 제목: ${title}, 내용: ${content}, 링크: ${link}`);
-        await sendPostToTelegram({ type, id, nickname, title, content, date, link, originalTitle, originalContent });
-        detectedPosts.push({ type, id, nickname, title, content, date, link, originalTitle, originalContent });
+        logger('detection', `🚨 부적절한 게시글 탐지: 게시판: ${type} 아이디: ${id}, 닉네임: ${nickname}, 제목: ${title}, 내용: ${content}, 링크: ${link} wrId ${wrId}`);
+        await sendPostToTelegram({ type, id, nickname, title, content, date, link, originalTitle, originalContent, wrId });
+        detectedPosts.push({ type, id, nickname, title, content, date, link, originalTitle, originalContent, wrId });
       }
     }
 

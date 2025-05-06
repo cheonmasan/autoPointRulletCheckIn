@@ -92,4 +92,44 @@ const gotoPage = async (page, url) => {
     }
 };
 
-module.exports = { closePopup, login, logout, gotoPage };
+// 게시글 URL 생성 함수
+const getPostUrl = (postType, wrId) => {
+    const baseUrl = 'https://onairslot.com/bbs/board.php';
+    const tableMap = {
+        free: 'free',
+        greet: 'greet',
+        slot: 'slot',
+    };
+    return `${baseUrl}?bo_table=${tableMap[postType]}&wr_id=${wrId}`;
+};
+
+// 게시글 삭제 루틴
+const deletePost = async (postType, wrId) => {
+    const { ADMIN, TIME } = getConfig();
+    const url = getPostUrl(postType, wrId);
+    const browser = await puppeteer.launch({ headless: 'new' }); // headless: true로 설정하면 브라우저가 보이지 않음
+    const page = await browser.newPage();
+
+    try {
+        await gotoPage(page, 'https://onairslot.com/');
+        await new Promise((page) => setTimeout(page, TIME));
+        await closePopup(page);
+        await new Promise((page) => setTimeout(page, TIME));
+        await login(page, ADMIN);
+        await new Promise((page) => setTimeout(page, TIME));
+        await gotoPage(page, url);
+        const deleteButton = await page.$('a[onclick^="del"]'); // "del" 함수가 포함된 버튼 선택
+        if (deleteButton) {
+            const deleteUrl = await page.evaluate(el => el.href, deleteButton); // href 속성 추출
+            await page.goto(deleteUrl); // 삭제 URL로 이동
+        } else {
+            console.error('❌ 삭제 버튼을 찾을 수 없습니다.');
+        }
+    } catch (error) {
+        console.error(`❌ 게시글 삭제 중 오류 발생: ${error.message}`);
+    } finally {
+        await browser.close();
+    }
+};
+
+module.exports = { closePopup, login, logout, gotoPage, deletePost, getPostUrl };

@@ -8,6 +8,7 @@ const initConfig = () => {
         ID_DATA1: JSON.parse(process.env.ID_DATA1),
         ID_DATA2: JSON.parse(process.env.ID_DATA2),
         ID_DATA3: JSON.parse(process.env.ID_DATA3),
+        ADMIN: process.env.ADMIN,
         PASSWORD: process.env.PASSWORD,
         POINT_SITES: {
             brother: {

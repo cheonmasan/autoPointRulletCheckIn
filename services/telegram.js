@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const dotenv = require('dotenv');
+const { deletePost } = require('./browser'); // browser.js에서 함수 가져오기
 dotenv.config();
 
 const token1 = process.env.TELEGRAM_TOKEN1;
@@ -42,13 +43,14 @@ const sendPostToTelegram = async (post) => {
         내용: ${post.originalContent}
         날짜: ${post.date}
         링크: ${post.link}
+        게시글Id: ${post.wrId}
     `;
 
     const options = {
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: '삭제', callback_data: `delete:${post.id}` }, // 게시글 ID만 포함
+                    { text: '삭제', callback_data: `delete:${post.type}/${post.wrId}` }, // 게시글 ID만 포함
                     { text: '링크 열기', url: post.link } // 링크는 URL로 처리
                 ]
             ]
@@ -59,21 +61,22 @@ const sendPostToTelegram = async (post) => {
 };
 
 bot2.on('callback_query', async (callbackQuery) => {
-    const data = callbackQuery.data; // 버튼에서 전달된 데이터
-    const messageId = callbackQuery.message.message_id; // 메시지 ID
-    const chatId = callbackQuery.message.chat.id; // 채팅 ID
+    let data = callbackQuery.data;
+    const chatId = callbackQuery.message.chat.id;
 
     if (data.startsWith('delete:')) {
-        // const [, postId, postLink] = data.split(':'); // 게시글 ID와 링크 추출
-        // console.log(`🗑️ 삭제 요청: 게시글 ID ${postId}, 링크: ${postLink}`);
+        const [ postType, postWrId] = data.split('/');
+        console.log(`🗑️ 삭제 요청: 게시판 타입: ${postType}, 게시글 ID: ${postWrId}`);
 
-        // // 여기서 삭제 로직을 호출하세요.
-        // await bot.sendMessage(chatId, `게시글 ID ${postId} (링크: ${postLink}) 삭제를 처리합니다.`);
-        console.log("🗑️ 삭제 요청: ", data);
+        try {
+            await bot2.answerCallbackQuery(callbackQuery.id, { text: '삭제 요청을 처리 중입니다.' });
+            await deletePost(postType, postWrId);
+            await bot2.sendMessage(chatId, `게시판 타입: ${postType}, 게시글 ID: ${postWrId} 삭제를 완료했습니다.`);
+        } catch (error) {
+            await bot2.sendMessage(chatId, `게시판 타입: ${postType}, 게시글 ID: ${postWrId} 삭제 중 오류가 발생했습니다.`);
+        }
     }
 
-    // 콜백 응답
-    await bot2.answerCallbackQuery(callbackQuery.id);
 });
 
 module.exports = { sendMessage, sendPostToTelegram };
