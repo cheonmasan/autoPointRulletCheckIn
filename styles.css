@@ -4,7 +4,8 @@
     margin-top: 20px;
 }
 
-th, td {
+th,
+td {
     border: 1px solid #ddd;
     padding: 8px;
     text-align: left;
@@ -116,7 +117,8 @@ label {
 }
 
 #logLinks {
-    max-height: 900px; /* 세로 사이즈 조절 (예: 200px) */
+    max-height: 900px;
+    /* 세로 사이즈 조절 (예: 200px) */
     overflow-y: auto;
     font-size: 0.9em;
     color: #555;

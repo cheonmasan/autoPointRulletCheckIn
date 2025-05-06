@@ -11,7 +11,7 @@ const retry = async (fn, maxRetries = 3, delay = 5000) => {
         try {
             return await fn();
         } catch (e) {
-            logger('pointmart',`재시도 ${i + 1}/${maxRetries}: ${e.message}`);
+            logger('pointmart', `재시도 ${i + 1}/${maxRetries}: ${e.message}`);
             if (i === maxRetries - 1) throw e;
             await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -60,7 +60,7 @@ const buyPoint = async (page, id, i, nextTime) => {
             } else if (point > 10000) {
                 amount = 10000;
             } else {
-                logger('pointmart',`id: ${id} 포인트 부족: ${text.replace("P", "")} 구매 불가`);
+                logger('pointmart', `id: ${id} 포인트 부족: ${text.replace("P", "")} 구매 불가`);
                 await new Promise((page) => setTimeout(page, 30000));
                 await logout(page);
                 await new Promise((page) => setTimeout(page, TIME));
@@ -68,14 +68,14 @@ const buyPoint = async (page, id, i, nextTime) => {
             }
 
             url = site.urls[amount];
-            logger('pointmart',`runPointMart ${i + 1} ${id} ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")} 포인트[${point}] 구매[${amount / 10000}만] 사이트[${site.name}] 약 ${nextTime / 60000}분 후`)
+            logger('pointmart', `runPointMart ${i + 1} ${id} ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")} 포인트[${point}] 구매[${amount / 10000}만] 사이트[${site.name}] 약 ${nextTime / 60000}분 후`)
 
             await purchasePoints(page, url, TIME);
             await logout(page);
             await new Promise((page) => setTimeout(page, nextTime));
         });
     } catch (e) {
-        logger('pointmart',`포인트 구매 에러: ID=${id}, 메시지=${e.message}, Stack=${e.stack}`);
+        logger('pointmart', `포인트 구매 에러: ID=${id}, 메시지=${e.message}, Stack=${e.stack}`);
         await logout(page);
     }
 };
@@ -156,7 +156,7 @@ const runPointMart = async () => {
             const now = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
             logger('pointmart', `runPointMart end ${now}`);
         } catch (e) {
-            logger('pointmart',`포인트 마트 치명적인 에러 발생: ${e.message}, Stack=${e.stack}`);
+            logger('pointmart', `포인트 마트 치명적인 에러 발생: ${e.message}, Stack=${e.stack}`);
             global.running1 = false;
             global.isSend1 = false;
         }

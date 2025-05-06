@@ -29,11 +29,11 @@ const scheduleTasks = (updateStatus) => {
                 sendMessage("출석 매크로 고장!!!");
                 global.isSend = true;
                 const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
-                logger('checkin',`runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
+                logger('checkin', `runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
                 await new Promise((page) => setTimeout(page, 10000));
-                updateStatus('checkin', true); 
+                updateStatus('checkin', true);
                 runCheckIn(92, 113);
-                updateStatus('checkin', false); 
+                updateStatus('checkin', false);
             }
         }
         if (global.running1 == true) {
@@ -47,9 +47,9 @@ const scheduleTasks = (updateStatus) => {
                     const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
                     logger('pointmart', `runPointMart 매크로 시작 한국 시간: ${koreaTime}`);
                     await new Promise((page) => setTimeout(page, 10000));
-                    updateStatus('pointmart', true); 
+                    updateStatus('pointmart', true);
                     runPointMart();
-                    updateStatus('pointmart', false); 
+                    updateStatus('pointmart', false);
                 }
             }
         }

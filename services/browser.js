@@ -105,13 +105,13 @@ const getPostUrl = (postType, wrId) => {
 
 // 게시글 삭제 루틴
 const deletePost = async (postType, wrId) => {
-    const { ADMIN  } = getConfig();
+    const { ADMIN } = getConfig();
     const url = getPostUrl(postType, wrId);
     const browser = await puppeteer.launch({ headless: false }); // headless: true로 설정하면 브라우저가 보이지 않음
     const page = await browser.newPage();
 
-    logger('detection',`삭제할 게시글 URL: ${url}`);
-    logger('detection',`삭제할 게시글 ID: ${wrId}`);
+    logger('detection', `삭제할 게시글 URL: ${url}`);
+    logger('detection', `삭제할 게시글 ID: ${wrId}`);
 
     page.on('dialog', async dialog => {
         logger('detection', `알림 =>, ${dialog.message()}`);
@@ -131,10 +131,10 @@ const deletePost = async (postType, wrId) => {
             const deleteUrl = await page.evaluate(el => el.href, deleteButton); // href 속성 추출
             await page.goto(deleteUrl); // 삭제 URL로 이동
         } else {
-            logger('detection','❌ 삭제 버튼을 찾을 수 없습니다.');
+            logger('detection', '❌ 삭제 버튼을 찾을 수 없습니다.');
         }
     } catch (error) {
-       logger('detection',`❌ 게시글 삭제 중 오류 발생: ${error.message}`);
+        logger('detection', `❌ 게시글 삭제 중 오류 발생: ${error.message}`);
     } finally {
         await browser.close();
     }

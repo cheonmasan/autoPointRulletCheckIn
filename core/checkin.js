@@ -67,7 +67,7 @@ const runCheckIn = async (start, end) => {
                         await new Promise((page) => setTimeout(page, TIME));
                         const checkinButton = await page.evaluateHandle(() => {
                             return document.querySelector('#attendance_list > form > table > tbody > tr > td:nth-child(2) > input') ||
-                                   document.querySelector('input[name="checkin"]');
+                                document.querySelector('input[name="checkin"]');
                         });
                         if (!checkinButton.asElement()) {
                             logger('checkin', `ID=${ID_DATA2[i]} 이미 출석 완료`);
