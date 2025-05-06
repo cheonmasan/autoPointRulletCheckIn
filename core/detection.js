@@ -13,7 +13,7 @@ const boardUrls = [
 
 // 부적절한 키워드 리스트
 const inappropriateKeywords = [
-  "섹파", "미친페이", "텔비포함", "조건만남","조건 만남","조건녀","조건 녀","평타이상"
+  "섹파", "미친페이", "텔비포함", "조건만남","조건녀"
 ];
 
 // 키워드 필터링 함수
@@ -85,7 +85,6 @@ async function detectKeywordsFromBoard(url) {
       const containsInappropriate = containsInappropriateKeywords(title) || containsInappropriateKeywords(content);
       if (containsInappropriate) {
         logger('detection', `🚨 부적절한 게시글 탐지: 게시판: ${type} 아이디: ${id}, 닉네임: ${nickname}, 제목: ${title}, 내용: ${content}, 링크: ${link} wrId ${wrId}`);
-        await sendPostToTelegram({ type, id, nickname, title, content, date, link, originalTitle, originalContent, wrId });
         detectedPosts.push({ type, id, nickname, title, content, date, link, originalTitle, originalContent, wrId });
       }
     }
@@ -112,9 +111,9 @@ async function fetchPostContent(link) {
   }
 }
 
-// 한글만 남기기 함수
+// 한글만 남기기 함수 (공백 제거)
 function extractKorean(text) {
-  return text.replace(/[^가-힣\s]/g, '').trim(); // 한글과 공백만 남기기
+  return text.replace(/[^가-힣]/g, '').trim(); // 한글만 남기기
 }
 
 async function runDetection() {

@@ -21,7 +21,7 @@ bot2.on('message', (msg) => {
     const receivedChatId = msg.chat.id; // 메시지를 보낸 사용자의 채팅 ID
     const text = msg.text; // 사용자가 보낸 메시지 내용
 
-    console.log(`📩 받은 메시지: ${text} (채팅 ID: ${receivedChatId})`);
+    logger('detection',`📩 받은 메시지: ${text} (채팅 ID: ${receivedChatId})`);
 
     // 특정 명령 처리
     if (text === '/delete') {
@@ -65,8 +65,9 @@ bot2.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
 
     if (data.startsWith('delete:')) {
+        data = data.substring(7);
         const [ postType, postWrId] = data.split('/');
-        console.log(`🗑️ 삭제 요청: 게시판 타입: ${postType}, 게시글 ID: ${postWrId}`);
+        logger('detection',`🗑️ 삭제 요청: 게시판 타입: ${postType}, 게시글 ID: ${postWrId}`);
 
         try {
             await bot2.answerCallbackQuery(callbackQuery.id, { text: '삭제 요청을 처리 중입니다.' });
