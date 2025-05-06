@@ -1,59 +1,10 @@
 const puppeteer = require('puppeteer');
 const moment = require('moment-timezone');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
 const { login, logout, gotoPage, closePopup } = require('../services/browser');
 const { getConfig } = require('../utils/config');
 const { logger } = require('../utils/loggerHelper');
+const { hasCommentedThisWeek, saveCommentThisWeek } = require('../utils/db'); // DB 관련 함수 가져오기
 
-// ===== DB 설정 =====
-const db = new sqlite3.Database(path.resolve(__dirname, '../commentHistory.db'));
-
-db.serialize(() => {
-    db.run(`
-    CREATE TABLE IF NOT EXISTS comments (
-      id TEXT,
-      week_key TEXT,
-      PRIMARY KEY (id, week_key)
-    )
-  `);
-});
-
-const getWeekRangeKey = (date = new Date()) => {
-    const now = moment(date).tz('Asia/Seoul');
-    const start = now.clone().startOf('week').add(11, 'hours'); // 일요일 11:00
-    const end = start.clone().add(6, 'days').hour(18); // 토요일 18:00
-
-    if (now.isBetween(start, end, null, '[)')) {
-        return `${start.format('YYYY-MM-DD_HH')}~${end.format('YYYY-MM-DD_HH')}`;
-    }
-    return null;
-};
-
-const hasCommentedThisWeek = (id) => {
-    const weekKey = getWeekRangeKey();
-    if (!weekKey) return Promise.resolve(true); // 주간 범위 외는 차단
-    return new Promise((resolve, reject) => {
-        db.get('SELECT * FROM comments WHERE id = ? AND week_key = ?', [id, weekKey], (err, row) => {
-            if (err) return reject(err);
-            resolve(!!row);
-        });
-    });
-};
-
-const saveCommentThisWeek = (id) => {
-    const weekKey = getWeekRangeKey();
-    if (!weekKey) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-        db.run('INSERT OR IGNORE INTO comments (id, week_key) VALUES (?, ?)', [id, weekKey], (err) => {
-            if (err) return reject(err);
-            resolve();
-        });
-    });
-};
-
-// ===== MAIN =====
 const runLotto = async () => {
     const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
     logger('lotto', `runLotto 매크로 시작 한국 시간: ${koreaTime}`);
@@ -87,7 +38,7 @@ const runLotto = async () => {
                 continue;
             }
 
-            const alreadyCommented = await hasCommentedThisWeek(id);
+            const alreadyCommented = await hasCommentedThisWeek(id, moment);
             if (alreadyCommented) {
                 logger('lotto', `${id} → 이번 주 이미 댓글 작성함. 건너뜀`);
                 continue;
@@ -110,7 +61,7 @@ const runLotto = async () => {
                 await new Promise(resolve => setTimeout(resolve, 3000));
 
                 logger('lotto', `${id} 댓글 작성 완료 → "${comment}"`);
-                await saveCommentThisWeek(id);
+                await saveCommentThisWeek(id, moment);
                 await logout(page);
 
                 const totalMinutes = Math.floor(Math.random() * (410 - 180 + 1)) + 180;
