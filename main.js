@@ -78,10 +78,10 @@ app.on('window-all-closed', () => {
 
 // 출석 체크
 ipcMain.handle('run-checkin', async () => {
-    updateStatus('checkin', true);
-    const result = await runCheckIn(92, 113);
-    updateStatus('checkin', false);
-    return result;
+    // updateStatus('checkin', true);
+    // const result = await runCheckIn(92, 113);
+    // updateStatus('checkin', false);
+    // return result;
 });
 
 // 포인트 마트
