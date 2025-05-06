@@ -69,13 +69,13 @@ const scheduleTasks = (updateStatus) => {
 
     cron.schedule("00 00 * * *", async () => {
         updateStatus('checkin', true)
-         await runCheckIn(92, 113);
+        await runCheckIn(92, 113);
         updateStatus('checkin', false)
     });
 
     cron.schedule("*/5 * * * *", async () => {
         updateStatus('detection', true)
-         await runDetection();
+        await runDetection();
         updateStatus('detection', false)
     });
 };

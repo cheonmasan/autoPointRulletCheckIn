@@ -23,6 +23,24 @@
     h1 { font-size: 15px;}
     .blue-text { color: blue; font-weight: bold; }
     .red-text { color: red; font-weight: bold; }
+    .log-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* 3열 */
+      gap: 10px; /* 칸 간격 */
+      margin-top: 20px;
+    }
+    .log-item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      resize: none;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -41,16 +59,33 @@
       <button id="lotto-btn">로또 <span id="lotto-status" class="status">❌</span></button>
       <button id="detection-btn">탐지 <span id="detection-status" class="status">❌</span></button>
     </div>
-    <h3>📗 룰렛 로그</h3>
-    <textarea id="roulette-log" readonly></textarea>
-    <h3>📙 포인트 마트 로그</h3>
-    <textarea id="pointmart-log" readonly></textarea>
-    <h3>📘 출석 로그</h3>
-    <textarea id="checkin-log" readonly></textarea>
-    <h3>📕 로또 로그</h3>
-    <textarea id="lotto-log" readonly></textarea>
-    <h3>📋 탐지 로그</h3>
-    <textarea id="detection-log" readonly></textarea>
+
+    <!-- 로그를 2x3 그리드로 배치 -->
+    <div class="log-grid">
+      <div class="log-item">
+        <h3>📗 룰렛 로그</h3>
+        <textarea id="roulette-log" readonly></textarea>
+      </div>
+      <div class="log-item">
+        <h3>📙 포인트 마트 로그</h3>
+        <textarea id="pointmart-log" readonly></textarea>
+      </div>
+      <div class="log-item">
+        <h3>📘 출석 로그</h3>
+        <textarea id="checkin-log" readonly></textarea>
+      </div>
+      <div class="log-item">
+        <h3>📕 로또 로그</h3>
+        <textarea id="lotto-log" readonly></textarea>
+      </div>
+      <div class="log-item">
+        <h3>📋 탐지 로그</h3>
+        <textarea id="detection-log" readonly></textarea>
+      </div>
+      <div class="log-item">
+        <!-- 빈칸 -->
+      </div>
+    </div>
   </div>
 
   <div id="content2" class="tab-content">
