@@ -171,11 +171,11 @@
     function addSettlementRow(targetBodyId, site, date, join, black, charge, deposit, withdraw, totalIn, totalOut) {
       const tbody = document.getElementById(targetBodyId);
       const row = document.createElement('tr');
-      [site, date, join, black, charge, deposit, withdraw, totalIn, totalOut].forEach(text => {
+      [site, date, join, black, charge, deposit, withdraw, totalIn, totalOut].forEach((text, index) => {
         const td = document.createElement('td');
         td.textContent = text;
 
-         // 입금/총입금은 파란색, 출금/총출금은 빨간색
+        // 입금/총입금은 파란색, 출금/총출금은 빨간색
         if (index === 5 || index === 7) td.classList.add('blue-text'); // 입금, 총입금
         if (index === 6 || index === 8) td.classList.add('red-text');  // 출금, 총출금
 

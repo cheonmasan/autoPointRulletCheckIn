@@ -68,7 +68,6 @@ const scheduleTasks = (updateStatus) => {
     });
 
     cron.schedule("00 00 * * *", async () => {
-        await new Promise((page) => setTimeout(page, 11000));
         updateStatus('checkin', true)
          await runCheckIn(92, 113);
         updateStatus('checkin', false)

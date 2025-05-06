@@ -20,7 +20,7 @@ async function crawlSite0(index) {
   // const browser = await puppeteer.launch({ headless: false });
   // const page = await browser.newPage();
   const { page, browser } = await connect({
-    headless: 'false',
+    headless: false,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     customConfig: {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
@@ -330,7 +330,7 @@ async function crawlSite0(index) {
 
       return settlementData;
     } else if (index === 3) { // 판도라
-      await page.waitForSelector('input[name="login_id"]', { timeout: 30000 });
+      await new Promise(resolve => setTimeout(resolve, 30000));
       await page.type('input[name="login_id"]', ID);
       await page.type('input[name="login_pw"]', PWD);
       await Promise.all([
