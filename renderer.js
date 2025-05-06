@@ -4,18 +4,21 @@ window.addEventListener('DOMContentLoaded', () => {
     const rouletteBtn = document.getElementById('roulette-btn');
     const lottoBtn = document.getElementById('lotto-btn');
     const detectionBtn = document.getElementById('detection-btn');
+    const createPostBtn = document.getElementById('createpost-btn');
 
     const checkinStatus = document.getElementById('checkin-status');
     const pointmartStatus = document.getElementById('pointmart-status');
     const rouletteStatus = document.getElementById('roulette-status');
     const lottoStatus = document.getElementById('lotto-status');
     const detectionStatus = document.getElementById('detection-status');
+    const createpostStatus = document.getElementById('createpost-status');
 
     const checkinLog = document.getElementById('checkin-log');
     const pointmartLog = document.getElementById('pointmart-log');
     const rouletteLog = document.getElementById('roulette-log');
     const lottoLog = document.getElementById('lotto-log');
     const detectionLog = document.getElementById('detection-log');
+    const createpostLog = document.getElementById('createpost-log');
 
     checkinBtn.addEventListener('click', async () => {
         await window.electronAPI.runCheckIn();
@@ -35,6 +38,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     detectionBtn.addEventListener('click', async () => {
         await window.electronAPI.runDetection();
+    });
+
+    createPostBtn.addEventListener('click', async () => {
+        await window.electronAPI.runCreatePost();
     });
 
     window.electronAPI.onLog((type, message) => {
@@ -60,6 +67,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 detectionLog.value += logLine;
                 detectionLog.scrollTop = detectionLog.scrollHeight;
                 break;
+            case 'createpost':
+                createpostLog.value += logLine;
+                createpostLog.scrollTop = createpostLog.scrollHeight;
+                break;
             default:
                 break;
         }
@@ -81,6 +92,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'detection':
                 detectionStatus.textContent = status;
+                break;
+            case 'createpost':
+                createpostStatus.textContent = status;
                 break;
             default:
                 break;

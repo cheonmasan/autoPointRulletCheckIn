@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     runRoulette: () => ipcRenderer.invoke('run-roulette'),
     runLotto: () => ipcRenderer.invoke('run-lotto'),
     runDetection: () => ipcRenderer.invoke('run-detection'),
+    runCreatePost: () => ipcRenderer.invoke('run-createpost'),
     onLog: (callback) => ipcRenderer.on('log', (_event, data) => callback(data.type, data.message)),
     onStatusUpdate: (callback) => ipcRenderer.on('status-update', (event, { type, status }) => callback(type, status)),
     onScrapeProgress: (callback) => ipcRenderer.on('scrape-progress', (_event, data) => callback(data)),

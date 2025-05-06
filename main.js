@@ -16,6 +16,7 @@ const { runPointMart } = require('./core/pointMart');
 const { runRoulette } = require('./core/roulette');
 const { runLotto } = require('./core/lotto');
 const { runDetection } = require('./core/detection');
+const { runCreatePost } = require('./core/createPost');
 
 let mainWindow;
 
@@ -112,6 +113,14 @@ ipcMain.handle('run-lotto', async () => {
 ipcMain.handle('run-detection', async () => {
     updateStatus('detection', true);
     const result = await runDetection();
+    updateStatus('detection', false);
+    return result;
+});
+
+// 포스트 생성
+ipcMain.handle('run-createpost', async () => {
+    updateStatus('detection', true);
+    const result = await runCreatePost();
     updateStatus('detection', false);
     return result;
 });
