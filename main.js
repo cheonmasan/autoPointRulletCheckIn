@@ -38,9 +38,9 @@ function createWindow() {
         // 로또와 탐지 작업을 동시에 실행
         await Promise.all([
             (async () => {
-                updateStatus('lotto', true);
-                await runLotto();
-                updateStatus('lotto', false);
+                // updateStatus('lotto', true);
+                // await runLotto();
+                // updateStatus('lotto', false);
             })(),
             (async () => {
                 updateStatus('detection', true);
