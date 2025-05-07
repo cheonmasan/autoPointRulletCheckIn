@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const { getConfig } = require('../utils/config');
+const { logger } = require('../utils/loggerHelper');
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
@@ -107,7 +108,8 @@ const getPostUrl = (postType, wrId) => {
 const deletePost = async (postType, wrId) => {
     const { ADMIN } = getConfig();
     const url = getPostUrl(postType, wrId);
-    const browser = await puppeteer.launch({ headless: false }); // headless: true로 설정하면 브라우저가 보이지 않음
+    console.log(`삭제할 게시글 타입: ${postType}, ID: ${wrId}, url: ${url}`);
+    const browser = await puppeteer.launch({ headless: 'new' }); // headless: true로 설정하면 브라우저가 보이지 않음
     const page = await browser.newPage();
 
     logger('detection', `삭제할 게시글 URL: ${url}`);
