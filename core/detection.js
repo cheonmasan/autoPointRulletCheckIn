@@ -1,8 +1,9 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment-timezone'); // moment 라이브러리 추가
-const { sendPostToTelegram } = require('../services/telegram'); // 텔레그램 전송 함수 가져오기
+const { sendPostToTelegram, sendMessage2 } = require('../services/telegram'); // 텔레그램 전송 함수 가져오기
 const { logger } = require('../utils/loggerHelper')
+const { deletePost } = require('../services/browser'); // 삭제 함수 가져오기
 
 // 게시판 URL 리스트
 const boardUrls = [
@@ -132,6 +133,12 @@ async function runDetection() {
                 // 탐지된 게시글을 텔레그램으로 전송
                 for (const post of detectedPosts) {
                     await sendPostToTelegram(post); // 텔레그램으로 게시글 전송
+                    try{
+                        await deletePost(post.type, post.wrId);
+                        await sendMessage2(post.type, post.wrId, true); // 삭제 완료 메시지 전송
+                    }catch (error) {
+                        await sendMessage2(post.type, post.wrId, false); // 삭제 완료 메시지 전송
+                    }
                 }
             } else {
                 logger('detection', `✅ ${url}에서 탐지된 게시물이 없습니다.`);
