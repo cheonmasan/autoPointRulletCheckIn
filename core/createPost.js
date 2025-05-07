@@ -59,78 +59,86 @@ const runCreatePost = async () => {
             await dialog.accept();
         });
 
-        const posts = await getUploadedPosts(); // DB에서 isUpload == 1인 게시글 가져오기
-        logger('createpost', `총 ${posts.length}개의 게시글을 처리합니다.`);
+        while (true) {
+            const posts = await getUploadedPosts(); // DB에서 isUpload == 1인 게시글 가져오기
+            if (posts.length === 0) {
+                logger('createpost', '처리할 게시글이 없습니다. 작업 종료.');
+                break; // 게시글이 없으면 루프 종료
+            }
 
-        for (const post of posts) {
-            const { id, title, content, images } = post;
+            logger('createpost', `총 ${posts.length}개의 게시글을 처리합니다.`);
 
-            try {
-                // AI 시간 적절성 확인
-                const aiResponse = await validatePostTime(title, content);
-                if (!aiResponse.isOkay) {
-                    logger('createpost', `게시글 ID ${id}는 시간 적절하지 않음(${aiResponse.reason}). 건너뜀.`);
-                    continue;
+            for (const post of posts) {
+                let ID_DATA2 = JSON.parse(process.env.ID_DATA2)
+                shuffle(ID_DATA2, 0);
+                const { id, title, content, images } = post;
+
+                try {
+                    // AI 시간 적절성 확인
+                    const aiResponse = await validatePostTime(title, content);
+                    if (!aiResponse.isOkay) {
+                        logger('createpost', `게시글 ID ${id}는 시간 적절하지 않음(${aiResponse.reason}). 건너뜀.`);
+                        continue;
+                    }
+
+                    const userId = ID_DATA2[0];
+                    await gotoPage(page, 'https://onairslot.com');
+                    await closePopup(page);
+                    await login(page, userId);
+                    logger('createpost', `로그인 완료: ${userId}`);
+
+                    // 게시글 작성
+                    await gotoPage(page, 'https://onairslot.com/bbs/write.php?bo_table=free');
+                    await page.waitForSelector('#wr_subject', { timeout: 10000 });
+                    await page.type('#wr_subject', title);
+
+                    const editorFrame = page.frames().find(frame => frame.url().includes('SmartEditor2Skin.html'));
+                    if (!editorFrame) throw new Error('SmartEditor2Skin.html iframe을 찾을 수 없습니다.');
+
+                    await editorFrame.waitForSelector('button.se2_to_html', { visible: true, timeout: 10000 });
+                    await editorFrame.evaluate(() => {
+                        const button = document.querySelector('button.se2_to_html');
+                        if (!button) throw new Error('HTML 버튼을 찾을 수 없습니다.');
+                        button.click();
+                    });
+
+                    const isHtmlMode = await editorFrame.$eval('textarea.se2_input_htmlsrc', textarea => textarea.style.display !== 'none');
+                    if (isHtmlMode) {
+                        await editorFrame.type('textarea.se2_input_htmlsrc', content);
+                    } else {
+                        throw new Error('HTML 편집 모드로 전환 실패');
+                    }
+
+                    // 이미지 업로드 (최대 5개)
+                    logger('createpost', `이미지 업로드 시작 (총 ${images.length}개)`);
+                    for (let i = 0; i < images.length; i++) {
+                        const imageInputSelector = `#file${i + 1}`;
+                        await page.waitForSelector(imageInputSelector, { timeout: 5000 });
+                        await page.type(imageInputSelector, images[i]);
+                    }
+
+                    // 게시글 작성 완료
+                    await page.waitForSelector('#btn_submit', { visible: true, timeout: 10000 });
+                    await page.click('#btn_submit');
+                    logger('createpost', `게시글 ID ${id} 작성 완료`);
+
+                    // DB 업데이트
+                    await markPostAsUploaded(userId, id);
+                    logger('createpost', `게시글 ID ${id}의 isUpload 상태를 2로 업데이트 완료`);
+
+                    // 로그아웃
+                    await logout(page);
+                    logger('createpost', '로그아웃 완료');
+
+                    // 20분에서 50분 대기
+                    const waitTime = Math.floor(Math.random() * (50 - 20 + 1) + 20) * 60 * 1000; // 20~50분 랜덤 대기
+                    logger('createpost', `로그아웃 후 ${waitTime / 60000}분 대기 시작`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    logger('createpost', '대기 완료, 다음 작업 진행');
+                } catch (error) {
+                    logger('createpost', `게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
+                    sendMessage(`게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
                 }
-
-                // 로그인
-                shuffle(process.env.ID_DATA2, 0);
-                const userId = JSON.parse(process.env.ID_DATA2)[0];
-                await gotoPage(page, 'https://onairslot.com');
-                await closePopup(page);
-                await login(page, userId);
-                logger('createpost', `로그인 완료: ${userId}`);
-
-                // 게시글 작성
-                await gotoPage(page, 'https://onairslot.com/bbs/write.php?bo_table=free');
-                await page.waitForSelector('#wr_subject', { timeout: 10000 });
-                await page.type('#wr_subject', title);
-
-                const editorFrame = page.frames().find(frame => frame.url().includes('SmartEditor2Skin.html'));
-                if (!editorFrame) throw new Error('SmartEditor2Skin.html iframe을 찾을 수 없습니다.');
-
-                await editorFrame.waitForSelector('button.se2_to_html', { visible: true, timeout: 10000 });
-                await editorFrame.evaluate(() => {
-                    const button = document.querySelector('button.se2_to_html');
-                    if (!button) throw new Error('HTML 버튼을 찾을 수 없습니다.');
-                    button.click();
-                });
-
-                const isHtmlMode = await editorFrame.$eval('textarea.se2_input_htmlsrc', textarea => textarea.style.display !== 'none');
-                if (isHtmlMode) {
-                    await editorFrame.type('textarea.se2_input_htmlsrc', content);
-                } else {
-                    throw new Error('HTML 편집 모드로 전환 실패');
-                }
-
-                // 이미지 업로드 (최대 5개)
-                logger('createpost', `이미지 업로드 시작 (총 ${images.length}개)`);
-                for (let i = 0; i < images.length; i++) {
-                    const imageInputSelector = `#file${i + 1}`;
-                    await page.waitForSelector(imageInputSelector, { timeout: 5000 });
-                    await page.type(imageInputSelector, images[i]);
-                }
-
-                // 게시글 작성 완료
-                await page.waitForSelector('#btn_submit', { visible: true, timeout: 10000 });
-                await page.click('#btn_submit');
-                logger('createpost', `게시글 ID ${id} 작성 완료`);
-
-                // DB 업데이트
-                await markPostAsUploaded(userId, id);
-                logger('createpost', `게시글 ID ${id}의 isUpload 상태를 2로 업데이트 완료`);
-
-                // 로그아웃
-                await logout(page);
-                logger('createpost', '로그아웃 완료');
-
-                // 20분에서 50분 대기
-                const waitTime = Math.floor(Math.random() * (50 - 20 + 1) + 20) * 60 * 1000; // 20~50분 랜덤 대기
-                logger('createpost', `로그아웃 후 ${waitTime / 60000}분 대기 시작`);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-                logger('createpost', '대기 완료, 다음 작업 진행');
-            } catch (error) {
-                sendMessage(`게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
             }
         }
     } catch (error) {
@@ -138,6 +146,7 @@ const runCreatePost = async () => {
     } finally {
         await browser.close();
         sendMessage('자유게시판 글쓰기 매크로 종료');
+        logger('createpost', 'runCreatePost 매크로 종료');
     }
 };
 
