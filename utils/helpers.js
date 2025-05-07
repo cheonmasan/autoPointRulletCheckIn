@@ -3,7 +3,11 @@ const shuffle = (array, count) => {
         let j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
     }
-    console.log(`셔플완료 ${count}번째`);
+    if(count===0){
+        console.log(`게시글 작성자 ID 셔플 완료`);
+    }else{
+        console.log(`셔플완료 ${count}번째`);
+    }
 };
 
 const rand = (min, max) => {

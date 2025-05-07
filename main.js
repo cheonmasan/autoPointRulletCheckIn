@@ -119,9 +119,9 @@ ipcMain.handle('run-detection', async () => {
 
 // 포스트 생성
 ipcMain.handle('run-createpost', async () => {
-    updateStatus('detection', true);
+    updateStatus('createpost', true);
     const result = await runCreatePost();
-    updateStatus('detection', false);
+    updateStatus('createpost', false);
     return result;
 });
 
