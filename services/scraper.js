@@ -1,7 +1,9 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { insertPost } = require('../utils/db'); // DB 삽입 함수 가져오기
 const moment = require('moment-timezone');
 const { logger } = require('../utils/loggerHelper');
+dotenv = require('dotenv').config();
 
 // 출석 체크 재시도용 함수
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
@@ -9,7 +11,7 @@ const retry = async (fn, maxRetries = 3, delay = 5000) => {
         try {
             return await fn();
         } catch (e) {
-            logger('checkin', `재시도 ${i + 1}/${maxRetries}: ${e.message}`);
+            console.log('checkin', `재시도 ${i + 1}/${maxRetries}: ${e.message}`);
             if (i === maxRetries - 1) throw e;
             await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -25,7 +27,7 @@ const checkinGetData = async () => {
             return await axios.get(url, { timeout: 10000 });
         });
     } catch (e) {
-        logger('checkin', `출석 데이터 가져오기 에러: ${e.message}, Stack=${e.stack}`);
+        console.log('checkin', `출석 데이터 가져오기 에러: ${e.message}, Stack=${e.stack}`);
         throw e;
     }
 
@@ -43,10 +45,8 @@ const checkinGetData = async () => {
     });
 
     if (!checkInCount) {
-        logger('checkin', `현재 날짜(${currentDay})의 출석 데이터를 찾을 수 없음`);
+        console.log('checkin', `현재 날짜(${currentDay})의 출석 데이터를 찾을 수 없음`);
     }
-
-    logger('checkin', `checkInCount : ${checkInCount}`);
     return checkInCount;
 };
 
@@ -312,8 +312,84 @@ async function scrape(startDate, endDate, onProgress) {
     return results;
 }
 
+async function slotmonsterScrape(){
+    const crolling_site1_URL = process.env.crolling_site1_URL;
+
+    try {
+        for (let page = 1; page <= 1173; page++) {
+            const pageUrl = `${crolling_site1_URL}&page=${page}`;
+            console.log('createpost', `페이지 크롤링 시작: ${pageUrl}`);
+
+            // 1. URL에서 HTML 가져오기
+            const response = await axios.get(pageUrl);
+            const html = response.data;
+
+            // 2. Cheerio로 HTML 파싱
+            const $ = cheerio.load(html);
+
+            // 3. 게시글 목록에서 링크 추출
+            const posts = [];
+            $('.list-item').each((index, element) => {
+                // 공지사항인지 확인
+                const isNotice = $(element).find('.wr-icon.wr-notice').length > 0;
+                if (isNotice) {
+                    return; // 공지사항은 건너뜀
+                }
+
+                // 링크 추출
+                const link = $(element).find('.wr-subject .item-subject').attr('href');
+                if (link) {
+                    const fullLink = link.startsWith('http') ? link : `https://interstic.io${link}`;
+                    
+                    // wr_id 추출
+                    const wrIdMatch = fullLink.match(/wr_id=(\d+)/) || fullLink.match(/wr_id\/(\d+)/);
+                    const wrId = wrIdMatch ? wrIdMatch[1] : null;
+
+                    if (wrId) {
+                        posts.push({ link: fullLink, wrId });
+                    }
+                }
+            });
+
+            // 4. 각 게시글 링크에 접속하여 데이터 가져오기
+            for (const post of posts) {
+                try {
+                    const postResponse = await axios.get(post.link);
+                    const postHtml = postResponse.data;
+                    const $$ = cheerio.load(postHtml);
+
+                    // 제목, 내용, 날짜 추출
+                    const title = $$('h1[itemprop="headline"]').text().trim();
+                    const content = $$('.view-content').text().trim();
+                    const date = $$('span[itemprop="datePublished"]').attr('content') || moment().tz("Asia/Seoul").format("YYYY-MM-DD");
+
+                    // 이미지 추출 (최대 5개)
+                    const images = [];
+                    $$('.view-content img').each((i, img) => {
+                        if (i >= 5) return false; // 최대 5개까지만 처리
+                        const imgSrc = $$(img).attr('src');
+                        if (imgSrc) {
+                            const absoluteUrl = imgSrc.startsWith('http') ? imgSrc : `https://interstic.io${imgSrc}`;
+                            images.push(absoluteUrl); // 이미지 URL 저장
+                        }
+                    });
+
+                    // DB에 저장 (wr_id 포함)
+                    await insertPost(title, content, date, images, post.wrId);
+                    console.log('createpost', `게시글 저장 완료: ${title}, wr_id: ${post.wrId}`);
+                } catch (postError) {
+                    console.log('createpost', `❌ 게시글 크롤링 중 오류 발생: ${post.link}, ${postError.message}`);
+                }
+            }
+        }
+    } catch (error) {
+        console.log('createpost', `❌ 데이터 크롤링 중 오류 발생: ${error.message}`);
+    }
+}
+
 // ✅ 모듈화
 module.exports = {
     checkinGetData,
-    scrape
+    scrape,
+    slotmonsterScrape
 };
