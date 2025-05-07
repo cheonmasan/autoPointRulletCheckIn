@@ -1,29 +1,143 @@
-const puppeteer = require('puppeteer');
 const moment = require('moment-timezone');
-const { login, logout, gotoPage, closePopup } = require('../services/browser');
-const { getConfig } = require('../utils/config');
-const { logger } = require('../utils/loggerHelper')
+const { logger } = require('../utils/loggerHelper');
+const { sendMessage } = require('../services/telegram');
+const { closePopup, login, gotoPage, logout } = require('../services/browser');
+const puppeteer = require('puppeteer');
+const { shuffle } = require('../utils/helpers');
+const { xaicall } = require('../api/xaicall');
+const { getUploadedPosts, markPostAsUploaded } = require('../utils/db');
+dotenv = require('dotenv').config();
+
+const validatePostTime = async (title, content) => {
+    const now = new Date();
+    const currentDay = now.toLocaleString('ko-KR', { weekday: 'long' });
+    const currentTime = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+    const prompt = `
+        제목: ${title}
+        내용: ${content}
+
+        위 문구에서 시간 관련 표현이 있는지 확인해 주세요. 
+        현재 시간은 ${currentDay} ${currentTime}입니다.
+        시간 관련 표현이 있다면, 해당 표현이 현재 시간과 적합한지 판단해 주세요.
+        시간 관련 표현중에 오늘은 언제든지 괜찮으니 적합 판단을 주세요
+        오타가 있을 경우 이를 교정하여 적합성을 판단해 주세요.
+
+        응답은 JSON 형식으로 반환해 주세요:
+        {
+            "isOkay": true/false, // 시간 관련 문구가 현재 시간과 적합하면 true, 아니면 false
+            "reason": "적합/부적합 이유를 간단히 설명"
+        }
+    `;
+
+    try {
+        const response = await xaicall(prompt);
+        console.log('AI 응답:', response);
+        return JSON.parse(response.trim());
+    } catch (error) {
+        console.error('AI 요청 실패:', error.message);
+        throw error;
+    }
+};
 
 const runCreatePost = async () => {
     const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
     logger('createpost', `runCreatePost 매크로 시작 한국 시간: ${koreaTime}`);
+    sendMessage('자유게시판 글쓰기 매크로 시작했습니다.');
+
     const browser = await puppeteer.launch({
         headless: 'new',
+        args: ['--disable-gpu', '--disable-dev-shm-usage', '--disk-cache-dir=/tmp/cache'],
         protocolTimeout: 600000 * 25
     });
+    const [page] = await browser.pages();
+    await page.setViewport({ width: 1920, height: 1080 });
 
     try {
-        const [page] = await browser.pages();
         page.on('dialog', async dialog => {
-            logger('createpost', `알림 => ${dialog.message()}`);
+            console.log(`알림 => ${dialog.message()}`);
             await dialog.accept();
         });
 
-    } catch (e) {
-        logger('createpost', `runRoulette run try catch error ${e}`);
+        const posts = await getUploadedPosts(); // DB에서 isUpload == 1인 게시글 가져오기
+        logger('createpost', `총 ${posts.length}개의 게시글을 처리합니다.`);
+
+        for (const post of posts) {
+            const { id, title, content, images } = post;
+
+            try {
+                // AI 시간 적절성 확인
+                const aiResponse = await validatePostTime(title, content);
+                if (!aiResponse.isOkay) {
+                    logger('createpost', `게시글 ID ${id}는 시간 적절하지 않음(${aiResponse.reason}). 건너뜀.`);
+                    continue;
+                }
+
+                // 로그인
+                shuffle(process.env.ID_DATA2, 0);
+                const userId = JSON.parse(process.env.ID_DATA2)[0];
+                await gotoPage(page, 'https://onairslot.com');
+                await closePopup(page);
+                await login(page, userId);
+                logger('createpost', `로그인 완료: ${userId}`);
+
+                // 게시글 작성
+                await gotoPage(page, 'https://onairslot.com/bbs/write.php?bo_table=free');
+                await page.waitForSelector('#wr_subject', { timeout: 10000 });
+                await page.type('#wr_subject', title);
+
+                const editorFrame = page.frames().find(frame => frame.url().includes('SmartEditor2Skin.html'));
+                if (!editorFrame) throw new Error('SmartEditor2Skin.html iframe을 찾을 수 없습니다.');
+
+                await editorFrame.waitForSelector('button.se2_to_html', { visible: true, timeout: 10000 });
+                await editorFrame.evaluate(() => {
+                    const button = document.querySelector('button.se2_to_html');
+                    if (!button) throw new Error('HTML 버튼을 찾을 수 없습니다.');
+                    button.click();
+                });
+
+                const isHtmlMode = await editorFrame.$eval('textarea.se2_input_htmlsrc', textarea => textarea.style.display !== 'none');
+                if (isHtmlMode) {
+                    await editorFrame.type('textarea.se2_input_htmlsrc', content);
+                } else {
+                    throw new Error('HTML 편집 모드로 전환 실패');
+                }
+
+                // 이미지 업로드 (최대 5개)
+                logger('createpost', `이미지 업로드 시작 (총 ${images.length}개)`);
+                for (let i = 0; i < images.length; i++) {
+                    const imageInputSelector = `#file${i + 1}`;
+                    await page.waitForSelector(imageInputSelector, { timeout: 5000 });
+                    await page.type(imageInputSelector, images[i]);
+                }
+
+                // 게시글 작성 완료
+                await page.waitForSelector('#btn_submit', { visible: true, timeout: 10000 });
+                await page.click('#btn_submit');
+                logger('createpost', `게시글 ID ${id} 작성 완료`);
+
+                // DB 업데이트
+                await markPostAsUploaded(userId, id);
+                logger('createpost', `게시글 ID ${id}의 isUpload 상태를 2로 업데이트 완료`);
+
+                // 로그아웃
+                await logout(page);
+                logger('createpost', '로그아웃 완료');
+
+                // 20분에서 50분 대기
+                const waitTime = Math.floor(Math.random() * (50 - 20 + 1) + 20) * 60 * 1000; // 20~50분 랜덤 대기
+                logger('createpost', `로그아웃 후 ${waitTime / 60000}분 대기 시작`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                logger('createpost', '대기 완료, 다음 작업 진행');
+            } catch (error) {
+                sendMessage(`게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
+            }
+        }
+    } catch (error) {
+        logger('createpost', `runCreatePost 전체 오류: ${error.message}`);
     } finally {
         await browser.close();
-        logger('createpost', `runRoulettet end`);
+        sendMessage('자유게시판 글쓰기 매크로 종료');
     }
 };
 
