@@ -14,7 +14,7 @@ const path = require('path');
 const { runCheckIn } = require('./core/checkin');
 const { runPointMart } = require('./core/pointMart');
 const { runRoulette } = require('./core/roulette');
-const { runLotto } = require('./core/lotto');
+const { runEvent } = require('./core/event');
 const { runDetection } = require('./core/detection');
 const { runCreatePost } = require('./core/createPost');
 
@@ -38,9 +38,9 @@ function createWindow() {
         // 로또와 탐지 작업을 동시에 실행
         await Promise.all([
             (async () => {
-                // updateStatus('lotto', true);
-                // await runLotto();
-                // updateStatus('lotto', false);
+                // updateStatus('event', true);
+                // await runEvent();
+                // updateStatus('event', false);
             })(),
             (async () => {
                 updateStatus('detection', true);
@@ -102,10 +102,10 @@ ipcMain.handle('run-roulette', async () => {
 });
 
 // 로또
-ipcMain.handle('run-lotto', async () => {
-    updateStatus('lotto', true);
-    const result = await runLotto();
-    updateStatus('lotto', false);
+ipcMain.handle('run-event', async () => {
+    updateStatus('event', true);
+    const result = await runEvent();
+    updateStatus('event', false);
     return result;
 });
 

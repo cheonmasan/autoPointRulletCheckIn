@@ -2,21 +2,21 @@ window.addEventListener('DOMContentLoaded', () => {
     const checkinBtn = document.getElementById('checkin-btn');
     const pointmartBtn = document.getElementById('pointmart-btn');
     const rouletteBtn = document.getElementById('roulette-btn');
-    const lottoBtn = document.getElementById('lotto-btn');
+    const eventBtn = document.getElementById('event-btn');
     const detectionBtn = document.getElementById('detection-btn');
     const createPostBtn = document.getElementById('createpost-btn');
 
     const checkinStatus = document.getElementById('checkin-status');
     const pointmartStatus = document.getElementById('pointmart-status');
     const rouletteStatus = document.getElementById('roulette-status');
-    const lottoStatus = document.getElementById('lotto-status');
+    const eventStatus = document.getElementById('event-status');
     const detectionStatus = document.getElementById('detection-status');
     const createpostStatus = document.getElementById('createpost-status');
 
     const checkinLog = document.getElementById('checkin-log');
     const pointmartLog = document.getElementById('pointmart-log');
     const rouletteLog = document.getElementById('roulette-log');
-    const lottoLog = document.getElementById('lotto-log');
+    const eventLog = document.getElementById('event-log');
     const detectionLog = document.getElementById('detection-log');
     const createpostLog = document.getElementById('createpost-log');
 
@@ -32,8 +32,8 @@ window.addEventListener('DOMContentLoaded', () => {
         await window.electronAPI.runRoulette();
     });
 
-    lottoBtn.addEventListener('click', async () => {
-        await window.electronAPI.runLotto();
+    eventBtn.addEventListener('click', async () => {
+        await window.electronAPI.runEvent();
     });
 
     detectionBtn.addEventListener('click', async () => {
@@ -59,9 +59,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 rouletteLog.value += logLine;
                 rouletteLog.scrollTop = rouletteLog.scrollHeight;
                 break;
-            case 'lotto':
-                lottoLog.value += logLine;
-                lottoLog.scrollTop = lottoLog.scrollHeight;
+            case 'event':
+                eventLog.value += logLine;
+                eventLog.scrollTop = eventLog.scrollHeight;
                 break;
             case 'detection':
                 detectionLog.value += logLine;
@@ -87,8 +87,8 @@ window.addEventListener('DOMContentLoaded', () => {
             case 'roulette':
                 rouletteStatus.textContent = status;
                 break;
-            case 'lotto':
-                lottoStatus.textContent = status;
+            case 'event':
+                eventStatus.textContent = status;
                 break;
             case 'detection':
                 detectionStatus.textContent = status;
