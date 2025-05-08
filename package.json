@@ -4,7 +4,8 @@
     "description": "Electron 기반 자동 출석 및 룰렛 앱",
     "main": "main.js",
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "build": "electron-builder"
     },
     "author": "",
     "license": "ISC",
@@ -22,6 +23,33 @@
         "sqlite3": "^5.1.7"
     },
     "devDependencies": {
-        "electron": "^29.0.0"
+        "electron": "^29.0.0",
+        "electron-builder": "^26.0.12"
+    },
+    "build": {
+        "appId": "com.auto.point.rullet.checkin",
+        "productName": "AutoPointRulletCheckIn",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "api/**/*",
+            "core/**/*",
+            "node_modules/**/*",
+            "schedules/**/*",
+            "services/**/*",
+            "utils/**/*",
+            ".env",
+            "globalVariable.js",
+            "index.html",
+            "main.js",
+            "preload.js",
+            "renderer.js",
+            "style.css"
+        ],
+        "win": {
+            "target": "nsis",
+            "icon": "onairslot.ico"
+        }
     }
 }

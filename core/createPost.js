@@ -9,18 +9,26 @@ const { getUploadedPosts, markPostAsUploaded } = require('../utils/db');
 dotenv = require('dotenv').config();
 
 const validatePostTime = async (title, content) => {
-    const now = new Date();
-    const currentDay = now.toLocaleString('ko-KR', { weekday: 'long' });
-    const currentTime = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    const now = moment().tz("Asia/Seoul"); // 현재 한국 시간
+    const currentYear = now.year(); // 년도
+    const currentMonth = now.month() + 1; // 월 (0부터 시작하므로 +1 필요)
+    const currentDate = now.date(); // 일
+    const currentDay = now.format('dddd'); // 요일
+    const currentTime = now.format('HH:mm'); // 시간 (24시간 형식)
+
+    console.log(`현재 시간: ${currentYear}년 ${currentMonth}월 ${currentDate}일 ${currentDay} ${currentTime}`);
 
     const prompt = `
         제목: ${title}
         내용: ${content}
 
         위 문구에서 시간 관련 표현이 있는지 확인해 주세요. 
-        현재 시간은 ${currentDay} ${currentTime}입니다.
-        시간 관련 표현이 있다면, 해당 표현이 현재 시간과 적합한지 판단해 주세요.
-        시간 관련 표현중에 오늘은 언제든지 괜찮으니 적합 판단을 주세요
+        현재 시간은 ${currentYear}년 ${currentMonth}월 ${currentDate}일 ${currentDay} ${currentTime}입니다.
+        만약 제목과 내용에 시간 관련 표현이 있다면, 해당 표현이 현재 시간과 적합한지 판단해 주세요.
+        시간 관련 표현이 없다면, 해당 표현이 적합으로 판단해주세요.
+        "오늘"이라는 단어가 제목이나 내용에 단독으로 사용시 적합하다고 판단해 주세요.
+        "제목에 굿밤~, "내용에 오늘 수고했어요"와 같은 표현은 false 입니다
+        특히, "굿밤", "좋은 밤", "잘자요"와 같은 표현은 저녁 6시 이후부터 다음날 오전 6시 사이에만 적합합니다.
         오타가 있을 경우 이를 교정하여 적합성을 판단해 주세요.
 
         응답은 JSON 형식으로 반환해 주세요:
@@ -31,12 +39,12 @@ const validatePostTime = async (title, content) => {
     `;
 
     try {
-        const response = await xaicall(prompt);
+        const response = await xaicall(prompt); // AI 호출 결과를 기다림
         console.log('AI 응답:', response);
-        return JSON.parse(response.trim());
+        return JSON.parse(response.trim()); // JSON 파싱 후 반환
     } catch (error) {
         console.error('AI 요청 실패:', error.message);
-        throw error;
+        throw error; // 에러를 호출한 곳으로 전달
     }
 };
 
@@ -68,13 +76,14 @@ const runCreatePost = async () => {
 
             logger('createpost', `총 ${posts.length}개의 게시글을 처리합니다.`);
 
-            for (const post of posts) {
-                let ID_DATA2 = JSON.parse(process.env.ID_DATA2)
-                shuffle(ID_DATA2, 0);
+            for (let index = 0; index < posts.length; index++) {
+                const post = posts[index];
                 const { id, title, content, images } = post;
 
-                logger('createpost', `현재 진행 중: ${index + 1}/${totalPosts} (게시글 ID: ${id})`);
-                console.log(`현재 진행 중: ${index + 1}/${totalPosts} (게시글 ID: ${id})`)
+                let ID_DATA2 = JSON.parse(process.env.ID_DATA2);
+                shuffle(ID_DATA2, 0); // 배열 섞기
+                logger('createpost', `현재 진행 중: ${index + 1}/${posts.length} (게시글 ID: ${id})`);
+                console.log(`현재 진행 중: ${index + 1}/${posts.length} (게시글 ID: ${id})`);
 
                 try {
                     // AI 시간 적절성 확인
@@ -153,4 +162,4 @@ const runCreatePost = async () => {
     }
 };
 
-module.exports = { runCreatePost };
+module.exports = { runCreatePost, validatePostTime };
