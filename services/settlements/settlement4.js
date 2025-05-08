@@ -13,7 +13,19 @@ async function crawlSite4(index) {
         return null;
     }
 
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({ 
+        headless: 'new', 
+        args: [
+            '--no-sandbox', // 샌드박스 비활성화 (권장되지 않지만 일부 환경에서 필요)
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled', // 자동화 탐지 방지
+            '--disable-infobars', // "Chrome이 자동화 소프트웨어에 의해 제어되고 있습니다" 메시지 숨김
+            '--window-size=1920,1080', // 브라우저 창 크기 설정
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' // 일반적인 사용자 에이전트 설정
+        ],
+        defaultViewport: null, // 기본 뷰포트 비활성화 (전체 화면 사용)
+        ignoreDefaultArgs: ['--enable-automation'], // 자동화 탐지 방지
+    });
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 }); // 화면 해상도 1920x1080
 

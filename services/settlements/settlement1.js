@@ -668,7 +668,7 @@ async function crawlSite1(index) {
                     const screenshot = await page.$eval('.captcha-img', img => img.src.split(',')[1]);
 
                     // 2Captcha로 해결
-                    const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len: 4, max_len: 6, regsense: 1 });
+                    const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len: 6, max_len: 6, regsense: 1 });
                     console.table(solution)
                     if (!solution?.data) throw new Error('2Captcha 해결 실패');
 
@@ -854,7 +854,7 @@ async function crawlSite1(index) {
                     const screenshot = await page.$eval('.captcha-img', img => img.src.split(',')[1]);
 
                     // 2Captcha로 해결
-                    const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len: 4, max_len: 6, regsense: 1 });
+                    const solution = await solver.imageCaptcha({ body: screenshot, numeric: 4, min_len: 6, max_len: 6, regsense: 1 });
                     console.table(solution)
                     if (!solution?.data) throw new Error('2Captcha 해결 실패');
 
