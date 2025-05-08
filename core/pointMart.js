@@ -5,6 +5,7 @@ const { sendMessage } = require('../services/telegram');
 const { rand } = require('../utils/helpers');
 const { getConfig } = require('../utils/config');
 const { logger } = require('../utils/loggerHelper')
+const globalVars = require('../globalVariable'); // 전역 변수 가져오기
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
@@ -87,7 +88,8 @@ const runPointMart = async () => {
     if (10 <= time && time <= 19) {
         sendMessage("포인트구매 매크로 시작했습니다.");
     }
-    global.running1 = true;
+    globalVars.pointmartIsRunning = true;
+    globalVars.pointmartIsSend = false;
 
     const browser = await puppeteer.launch({
         headless: 'new',
@@ -144,8 +146,8 @@ const runPointMart = async () => {
             }
         }
         sendMessage("금일 포인트 매크로 완료되었습니다.");
-        global.running1 = false;
-        global.isSend1 = false;
+        globalVars.pointmartIsRunning = false;
+        globalVars.pointmartIsSend = false;
     } catch (e) {
         logger('pointmart', `포인트 마트 치명적인 에러 발생3: ${e.message}, Stack=${e.stack}`);
         global.running1 = false;

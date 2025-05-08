@@ -6,6 +6,7 @@ const { sendMessage } = require('../services/telegram');
 const { rand } = require('../utils/helpers');
 const { getConfig } = require('../utils/config');
 const { logger } = require('../utils/loggerHelper')
+const globalVars = require('../globalVariable'); // 전역 변수 가져오기
 
 const retry = async (fn, maxRetries = 3, delay = 5000) => {
     for (let i = 0; i < maxRetries; i++) {
@@ -22,12 +23,12 @@ const retry = async (fn, maxRetries = 3, delay = 5000) => {
 const runCheckIn = async (start, end) => {
     const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
     logger('checkin', `runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
-    if (global.isSend == true) {
+    if (globalVars.checkinIsSend) {
         sendMessage("고장난 출석매크로 재시작완료!");
     }
     sendMessage("출석매크로 시작했습니다.");
-    global.running = true;
-    global.isSend = false;
+    globalVars.checkinIsRunning = true;
+    globalVars.checkinIsSend = false;
 
     const browser = await puppeteer.launch({
         headless: 'new',

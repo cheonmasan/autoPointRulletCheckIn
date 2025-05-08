@@ -7,27 +7,24 @@ const { runDetection } = require('../core/detection');
 const { checkinGetData } = require('../services/scraper');
 const { sendMessage } = require('../services/telegram');
 const { logger } = require('../utils/loggerHelper')
-
-global.running = false;
-global.isSend = false;
-global.running1 = false;
-global.isSend1 = false;
+const globalVars = require('../globalVariable'); // 전역 변수 가져오기
 
 const scheduleTasks = (updateStatus) => {
     cron.schedule("*/30 * * * *", async () => {
-        logger('checkin', `출석 global.running=${global.running} global.isSend=${global.isSend}`);
-        logger('pointmart', `포인트 마트 global.running1=${global.running1} global.isSend1=${global.isSend1}`);
+        logger('checkin', `출석 global.checkinIsRunning=${globalVars.checkinIsRunning} global.checkinIsSend=${globalVars.checkinIsSend}`);
+        logger('pointmart', `포인트 마트 global.pointmartIsRunning=${globalVars.pointmartIsRunning} global.pointmartIsSend=${globalVars.pointmartIsSend}`);
 
-        global.checkInCount = await checkinGetData();
-        logger('checkin', `global.checkInCount ${global.checkInCount}`);
+        globalVars.checkInCount = await checkinGetData();
+        logger('checkin', `global.checkInCount ${globalVars.checkInCount}`);
 
-        if (global.running == true) {
+        if (globalVars.checkinIsRunning) {
+            // 이미 실행 중
         } else {
-            if (global.isSend == false && global.checkInCount <= 80 && global.checkInCount != 0) {
+            if (!globalVars.checkinIsSend && globalVars.checkInCount <= 80 && globalVars.checkInCount !== 0) {
                 let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
                 logger('checkin', `시간 ${time}`);
                 sendMessage("출석 매크로 고장!!!");
-                global.isSend = true;
+                globalVars.checkinIsSend = true;
                 const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
                 logger('checkin', `runCheckIn 매크로 시작 한국 시간: ${koreaTime}`);
                 await new Promise((page) => setTimeout(page, 10000));
@@ -36,14 +33,16 @@ const scheduleTasks = (updateStatus) => {
                 updateStatus('checkin', false);
             }
         }
-        if (global.running1 == true) {
+
+        if (globalVars.pointmartIsRunning) {
+            // 이미 실행 중
         } else {
-            if (global.isSend1 == false) {
+            if (!globalVars.pointmartIsSend) {
                 let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
                 logger('pointmart', `시간 ${time}`);
                 if (10 <= time && time < 19) {
                     sendMessage("포인트마트 매크로 고장!!!");
-                    global.isSend1 = true;
+                    globalVars.pointmartIsSend = true;
                     const koreaTime = moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss");
                     logger('pointmart', `runPointMart 매크로 시작 한국 시간: ${koreaTime}`);
                     await new Promise((page) => setTimeout(page, 10000));
