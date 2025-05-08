@@ -101,10 +101,13 @@ ipcMain.handle('run-roulette', async () => {
     return result;
 });
 
-// 로또
+// 이벤트
 ipcMain.handle('run-event', async () => {
     updateStatus('event', true);
-    const result = await runEvent();
+    const result1 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=636', 'lotto');
+    const result2 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=797', 'slotjackpot');
+    const result3 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=820', 'movieking');
+    const result4 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=747', 'actionking');
     updateStatus('event', false);
     return result;
 });

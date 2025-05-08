@@ -67,6 +67,28 @@ const saveCommentThisWeek = (id, moment) => {
     });
 };
 
+// 이벤트 댓글 여부 확인
+const hasCommentedThisEvent = (id, event) => {
+    const key = event;
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM comments WHERE id = ? AND week_key = ?', [id, event], (err, row) => {
+            if (err) return reject(err);
+            resolve(!!row);
+        });
+    });
+};
+
+// 이벤트 댓글 저장
+const saveCommentThisEvent = (id, event) => {
+    const key = event;
+    return new Promise((resolve, reject) => {
+        db.run('INSERT OR IGNORE INTO comments (id, week_key) VALUES (?, ?)', [id, event], (err) => {
+            if (err) return reject(err);
+            resolve();
+        });
+    });
+};
+
 // 게시글 삽입 함수
 const insertPost = (title, content, date, images, id) => {
     const createdAt = moment().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss'); // 현재 시간
@@ -134,6 +156,8 @@ module.exports = {
     getWeekRangeKey,
     hasCommentedThisWeek,
     saveCommentThisWeek,
+    hasCommentedThisEvent,
+    saveCommentThisEvent,
     insertPost,
     getUploadedPosts,
     markPostAsUploaded
