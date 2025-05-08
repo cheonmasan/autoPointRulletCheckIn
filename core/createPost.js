@@ -4,7 +4,7 @@ const { sendMessage } = require('../services/telegram');
 const { closePopup, login, gotoPage, logout } = require('../services/browser');
 const puppeteer = require('puppeteer');
 const { shuffle } = require('../utils/helpers');
-const { xaicall } = require('../api/xaicall');
+const { xaiCall } = require('../api/xaiCall');
 const { getUploadedPosts, markPostAsUploaded } = require('../utils/db');
 dotenv = require('dotenv').config();
 
@@ -39,7 +39,7 @@ const validatePostTime = async (title, content) => {
     `;
 
     try {
-        const response = await xaicall(prompt); // AI 호출 결과를 기다림
+        const response = await xaiCall(prompt); // AI 호출 결과를 기다림
         console.log('AI 응답:', response);
         return JSON.parse(response.trim()); // JSON 파싱 후 반환
     } catch (error) {

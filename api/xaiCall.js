@@ -6,7 +6,7 @@ if (!XAI_API_TOKEN) {
   throw new Error("XAI_API_TOKEN is not defined. Please check your environment variables.");
 }
 
-async function xaicall(prompt) {
+async function xaiCall(prompt) {
   try {
     const response = await axios.post(
       "https://api.x.ai/v1/chat/completions",
@@ -37,4 +37,4 @@ async function xaicall(prompt) {
   }
 }
 
-module.exports = { xaicall };
+module.exports = { xaiCall };
