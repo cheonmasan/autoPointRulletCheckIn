@@ -73,6 +73,9 @@ const runCreatePost = async () => {
                 shuffle(ID_DATA2, 0);
                 const { id, title, content, images } = post;
 
+                logger('createpost', `현재 진행 중: ${index + 1}/${totalPosts} (게시글 ID: ${id})`);
+                console.log(`현재 진행 중: ${index + 1}/${totalPosts} (게시글 ID: ${id})`)
+
                 try {
                     // AI 시간 적절성 확인
                     const aiResponse = await validatePostTime(title, content);
