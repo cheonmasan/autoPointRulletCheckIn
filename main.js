@@ -104,10 +104,12 @@ ipcMain.handle('run-roulette', async () => {
 // 이벤트
 ipcMain.handle('run-event', async () => {
     updateStatus('event', true);
-    const result1 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=636', 'lotto');
-    const result2 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=797', 'slotjackpot');
-    const result3 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=820', 'movieking');
-    const result4 = await runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=747', 'actionking');
+    const [result1, result2, result3, result4] = await Promise.all([
+        runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=636', 'lotto'),
+        runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=797', 'slotjackpot'),
+        runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=820', 'movieking'),
+        runEvent('https://onairslot.com/bbs/board.php?bo_table=event&wr_id=747', 'actionking')
+    ]);
     updateStatus('event', false);
     return result;
 });
