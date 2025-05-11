@@ -80,7 +80,7 @@ const runEvent = async (eventUrl, type) => {
             logger('event', `runEvent 전체 오류: ${e}`);
         } finally {
             await browser.close();
-            logger('event', `runEvent 종료`);
+            logger('event', `lotto 종료`);
         }
     }
 

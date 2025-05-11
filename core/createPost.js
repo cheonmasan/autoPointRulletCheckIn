@@ -7,6 +7,26 @@ const { shuffle } = require('../utils/helpers');
 const { xaiCall } = require('../api/xaiCall');
 const { getUploadedPosts, markPostAsUploaded } = require('../utils/db');
 dotenv = require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+const os = require('os');
+
+// 이미지 URL을 로컬 파일로 다운로드하는 함수
+const downloadImage = async (url, outputPath) => {
+    const response = await axios({
+        url,
+        method: 'GET',
+        responseType: 'stream',
+    });
+
+    return new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(outputPath);
+        response.data.pipe(writer);
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+    });
+};
 
 const validatePostTime = async (title, content) => {
     const now = moment().tz("Asia/Seoul"); // 현재 한국 시간
@@ -30,6 +50,10 @@ const validatePostTime = async (title, content) => {
         A와 B가 모두 적합하다면 true로 해주세요
         A와 B에 시간 관련이 없다면 판단 후 true로 해주세요
         오타가 있을 경우 이를 교정하여 적합성을 판단해 주세요.
+        굿밤은 무조건 밤이나 새벽에만 사용합니다.
+        굿이브닝은 저녁에만 사용합니다.
+        굿모닝은 아침에만 사용합니다.
+        엄격한 시간 제한을 지키세요.
         온슬은 온에어슬롯의 줄임말입니다.
         여기는 온에어슬롯 커뮤니티 자유게시판에 올릴 글입니다.
         장마 시기: 6월 하순부터 7월 말 사이
@@ -57,7 +81,7 @@ const runCreatePost = async () => {
     sendMessage('자유게시판 글쓰기 매크로 시작했습니다.');
 
     const browser = await puppeteer.launch({
-        headless: 'new',
+        headless: false,
         args: ['--disable-gpu', '--disable-dev-shm-usage', '--disk-cache-dir=/tmp/cache'],
         protocolTimeout: 600000 * 25
     });
@@ -124,22 +148,61 @@ const runCreatePost = async () => {
                         throw new Error('HTML 편집 모드로 전환 실패');
                     }
 
-                    // 이미지 업로드 (최대 5개)
-                    logger('createpost', `이미지 업로드 시작 (총 ${images.length}개)`);
-                    for (let i = 0; i < images.length; i++) {
-                        const imageInputSelector = `#file${i + 1}`;
-                        await page.waitForSelector(imageInputSelector, { timeout: 5000 });
-                        await page.type(imageInputSelector, images[i]);
+                    // 이미지 업로드 (최대 2개)
+                    if (images && images.length > 0) {
+                        const maxImages = Math.min(images.length, 2); // 최대 2개의 이미지만 업로드
+                        logger('createpost', `이미지 업로드 시작 (총 ${maxImages}개)`);
+
+                        const uploadedFiles = []; // 업로드된 파일 경로를 저장
+
+                        for (let i = 0; i < maxImages; i++) {
+                            const imageInputSelector = `#fwriteFile${i}`;
+                            await page.waitForSelector(imageInputSelector, { timeout: 5000 });
+
+                            // 이미지 URL을 로컬 파일로 다운로드
+                            const tempDir = os.tmpdir(); // 임시 디렉토리
+                            const localImagePath = path.join(tempDir, `image${i + 1}.jpg`);
+                            await downloadImage(images[i], localImagePath);
+
+                            // 로컬 파일 경로를 업로드
+                            const inputElement = await page.$(imageInputSelector);
+                            await inputElement.uploadFile(localImagePath);
+
+                            logger('createpost', `이미지 ${i + 1} 업로드 완료: ${images[i]}`);
+
+                            // 업로드된 파일 경로 저장
+                            uploadedFiles.push(localImagePath);
+                        }
+
+                        // 게시글 작성 완료 후 파일 삭제
+                        await page.click('#btn_submit');
+                        logger('createpost', `게시글 ID ${id} 작성 완료`);
+
+                        // 업로드된 파일 삭제
+                        for (const filePath of uploadedFiles) {
+                            fs.unlink(filePath, (err) => {
+                                if (err) {
+                                    logger('createpost', `임시 파일 삭제 실패: ${filePath}`);
+                                } else {
+                                    logger('createpost', `임시 파일 삭제 완료: ${filePath}`);
+                                }
+                            });
+                        }
+                    } else {
+                        logger('createpost', '이미지가 없어 업로드를 건너뜁니다.');
                     }
 
-                    // 게시글 작성 완료
-                    await page.waitForSelector('#btn_submit', { visible: true, timeout: 10000 });
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+
                     await page.click('#btn_submit');
                     logger('createpost', `게시글 ID ${id} 작성 완료`);
 
                     // DB 업데이트
                     await markPostAsUploaded(userId, id);
                     logger('createpost', `게시글 ID ${id}의 isUpload 상태를 2로 업데이트 완료`);
+
+                    
+                    await new Promise(resolve => setTimeout(resolve, 10000));
 
                     // 로그아웃
                     await logout(page);
