@@ -175,35 +175,38 @@ const runCreatePost = async () => {
                             uploadedFiles.push(localImagePath);
                         }
 
-                        // 게시글 작성 완료 후 파일 삭제
+                        // 게시글 작성 완료 후 버튼 클릭
                         await page.click('#btn_submit');
                         logger('createpost', `게시글 ID ${id} 작성 완료`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
 
-                        // 업로드된 파일 삭제
-                        for (const filePath of uploadedFiles) {
-                            fs.unlink(filePath, (err) => {
-                                if (err) {
-                                    logger('createpost', `임시 파일 삭제 실패: ${filePath}`);
-                                } else {
-                                    logger('createpost', `임시 파일 삭제 완료: ${filePath}`);
-                                }
-                            });
+                        // Check if there are uploaded files before attempting to delete them
+                        if (uploadedFiles && uploadedFiles.length > 0) {
+                            for (const filePath of uploadedFiles) {
+                                fs.unlink(filePath, (err) => {
+                                    if (err) {
+                                        logger('createpost', `임시 파일 삭제 실패: ${filePath}`);
+                                    } else {
+                                        logger('createpost', `임시 파일 삭제 완료: ${filePath}`);
+                                    }
+                                });
+                            }
+                        } else {
+                            logger('createpost', '삭제할 업로드된 파일이 없습니다.');
                         }
                     } else {
                         logger('createpost', '이미지가 없어 업로드를 건너뜁니다.');
+
+                        // 이미지가 없더라도 버튼 클릭
+                        await page.click('#btn_submit');
+                        logger('createpost', `게시글 ID ${id} 작성 완료`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
                     }
-
-                    await new Promise(resolve => setTimeout(resolve, 10000));
-
-                    await page.click('#btn_submit');
-                    logger('createpost', `게시글 ID ${id} 작성 완료`);
 
                     // DB 업데이트
                     await markPostAsUploaded(userId, id);
                     logger('createpost', `게시글 ID ${id}의 isUpload 상태를 2로 업데이트 완료`);
-
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10000));
+                    await new Promise(resolve => setTimeout(resolve, 5000));
 
                     // 로그아웃
                     await logout(page);
@@ -216,7 +219,8 @@ const runCreatePost = async () => {
                     logger('createpost', '대기 완료, 다음 작업 진행');
                 } catch (error) {
                     logger('createpost', `게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
-                    sendMessage(`게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
+                    const currentUrl = page.url();
+                    sendMessage(`게시글 ID ${id} 처리 중 오류 발생: ${error.message} 현재 페이지 URL: ${currentUrl}`);
                     await logout(page);
                 }
             }
@@ -225,7 +229,7 @@ const runCreatePost = async () => {
         logger('createpost', `runCreatePost 전체 오류: ${error.message}`);
     } finally {
         await browser.close();
-        sendMessage('자유게시판 글쓰기 매크로 종료');
+        sendMessage('치명적인 에러 자유게시판 글쓰기 매크로 종료');
         logger('createpost', 'runCreatePost 매크로 종료');
     }
 };
