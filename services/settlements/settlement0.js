@@ -129,7 +129,7 @@ async function crawlSite0(index) {
 
             // 정산 페이지로 이동
             const sdate = moment().tz('Asia/Seoul').subtract(1, 'days').startOf('month').format('YYYY-MM-DD');
-            const edate = moment().tz('Asia/Seoul').add(1, 'days').format('YYYY-MM-DD');
+            const edate = moment().tz('Asia/Seoul').format('YYYY-MM-DD');
             const accountDayURL = `${URL}/partner/account_day.asp?code_group=T2&code_no=S0&store_group=365&sdate=${sdate}&edate=${edate}&search_store_group=365&search_level=1`;
             await page.goto(accountDayURL, { waitUntil: 'networkidle2' });
 
