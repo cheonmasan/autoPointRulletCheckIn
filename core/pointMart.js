@@ -126,7 +126,7 @@ const runPointMart = async () => {
             }
         }
 
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 50; i++) {
             try {
                 let time = parseInt(moment().tz("Asia/Seoul").format("HH"));
                 if (10 <= time && time < 19 && !purchaseCompleted) {

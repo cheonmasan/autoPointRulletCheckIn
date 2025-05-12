@@ -52,8 +52,9 @@ const validatePostTime = async (title, content) => {
         오타가 있을 경우 이를 교정하여 적합성을 판단해 주세요.
         굿밤은 무조건 밤이나 새벽에만 사용합니다.
         굿이브닝은 저녁에만 사용합니다.
-        굿모닝은 아침에만 사용합니다.
-        엄격한 시간 제한을 지키세요.
+        굿모닝은 아침에만 사용합니다. 
+        온에어슬롯 커뮤니티 자유게시판의 글 특성상 시간적 제약을 엄격히 적용해야합니다.
+        점심은 점심시간, 저녁은 저녁시간 엄격히 지켜주세요
         온슬은 온에어슬롯의 줄임말입니다.
         여기는 온에어슬롯 커뮤니티 자유게시판에 올릴 글입니다.
         장마 시기: 6월 하순부터 7월 말 사이
@@ -81,7 +82,7 @@ const runCreatePost = async () => {
     sendMessage('자유게시판 글쓰기 매크로 시작했습니다.');
 
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: 'new',
         args: ['--disable-gpu', '--disable-dev-shm-usage', '--disk-cache-dir=/tmp/cache'],
         protocolTimeout: 600000 * 25
     });
@@ -216,6 +217,7 @@ const runCreatePost = async () => {
                 } catch (error) {
                     logger('createpost', `게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
                     sendMessage(`게시글 ID ${id} 처리 중 오류 발생: ${error.message}`);
+                    await logout(page);
                 }
             }
         }
