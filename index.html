@@ -120,6 +120,51 @@
             resize: none;
             font-size: 12px;
         }
+
+        #exchange-rate-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        #exchange-rate-table th,
+        #exchange-rate-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #exchange-rate-table th {
+            background-color: #f1f1f1;
+        }
+
+        #exchange-rate-container {
+            margin-top: 20px;
+        }
+
+        .exchange-conversion {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .exchange-conversion label {
+            flex: 0.2;
+            margin-right: 10px;
+        }
+
+        .exchange-conversion input {
+            flex: 0.3;
+            margin-right: 10px;
+        }
+
+        .exchange-conversion button {
+            margin-right: 10px;
+        }
+
+        .exchange-conversion span {
+            flex: 1;
+        }
     </style>
 </head>
 
@@ -128,6 +173,7 @@
         <div id="tab1" class="tab active" onclick="switchTab(1)">출석,포마,룰렛,로또</div>
         <div id="tab2" class="tab" onclick="switchTab(2)">활동왕 찾기</div>
         <div id="tab3" class="tab" onclick="switchTab(3)">정산</div>
+        <div id="tab4" class="tab" onclick="switchTab(4)">환율 정보</div>
     </div>
 
     <div id="content1" class="tab-content active">
@@ -357,6 +403,54 @@
         </table>
     </div>
 
+    <div id="content4" class="tab-content">
+        <h1>✅ 환율 정보</h1>
+        <button id="exchange-btn">환율 크롤링 <span id="exchange-status" class="status">❌</span></button>
+        <div id="exchange-rate-container">
+            <h2>환율 정보</h2>
+            <table id="exchange-rate-table">
+                <thead>
+                    <tr>
+                        <th>서비스</th>
+                        <th>환율(100VND->KRW)</th>
+                        <th>환율(1KRW->VND)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>네이버</td>
+                        <td id="naver-rate">-</td>
+                        <td id="naver-vnd-rate">-</td>
+                    </tr>
+                    <tr>
+                        <td>크로스</td>
+                        <td id="cross-rate">-</td>
+                        <td id="cross-vnd-rate">-</td>
+                    </tr>
+                    <tr>
+                        <td>와이어바알리</td>
+                        <td id="wirebarley-rate">-</td>
+                        <td id="wirebarley-vnd-rate">-</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>환율 변환</h2>
+            <div class="exchange-conversion">
+                <label for="krw-to-vnd">한국 돈 (KRW) → 베트남 돈 (VND):</label>
+                <input type="text" id="krw-to-vnd" placeholder="KRW 금액 입력" />
+                <button id="convert-krw-to-vnd">변환</button>
+                <span id="krw-to-vnd-result">-</span>
+            </div>
+            <div class="exchange-conversion">
+                <label for="vnd-to-krw">베트남 돈 (VND) → 한국 돈 (KRW):</label>
+                <input type="text" id="vnd-to-krw" placeholder="VND 금액 입력" />
+                <button id="convert-vnd-to-krw">변환</button>
+                <span id="vnd-to-krw-result">-</span>
+            </div>
+        </div>
+    </div>
+
     <script>
         function switchTab(tabNumber) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -380,6 +474,61 @@
             });
             tbody.appendChild(row);
         }
+
+        document.getElementById('convert-krw-to-vnd').addEventListener('click', () => {
+            const krwInput = document.getElementById('krw-to-vnd').value.replace(/,/g, ''); // Remove commas
+            const krwAmount = parseFloat(krwInput); // Parse as float
+            const naverRate = parseFloat(document.getElementById('naver-rate').textContent);
+            const crossRate = parseFloat(document.getElementById('cross-rate').textContent);
+            const wirebarleyRate = parseFloat(document.getElementById('wirebarley-rate').textContent);
+
+            if (isNaN(krwAmount) || isNaN(naverRate)) {
+                document.getElementById('krw-to-vnd-result').textContent = 'Invalid input or rate';
+                return;
+            }
+
+            const naverVnd = (krwAmount / naverRate) * 100;
+            const crossVnd = crossRate ? (krwAmount / crossRate) * 100 : null;
+            const wirebarleyVnd = wirebarleyRate ? (krwAmount / wirebarleyRate) * 100 : null;
+
+            let result = `네이버: ${naverVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
+            if (crossVnd !== null) result += `<br>크로스: ${crossVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
+            if (wirebarleyVnd !== null) result += `<br>와이어바알리: ${wirebarleyVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
+
+            document.getElementById('krw-to-vnd-result').innerHTML = result;
+        });
+
+        document.getElementById('convert-vnd-to-krw').addEventListener('click', () => {
+            const vndInput = document.getElementById('vnd-to-krw').value.replace(/,/g, ''); // Remove commas
+            const vndAmount = parseFloat(vndInput); // Parse as float
+            const naverRate = parseFloat(document.getElementById('naver-rate').textContent);
+
+            if (isNaN(vndAmount) || isNaN(naverRate)) {
+                document.getElementById('vnd-to-krw-result').textContent = 'Invalid input or rate';
+                return;
+            }
+
+            const krwAmount = (vndAmount * naverRate) / 100;
+            document.getElementById('vnd-to-krw-result').textContent = krwAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        });
+
+        document.getElementById('krw-to-vnd').addEventListener('input', (event) => {
+            const input = event.target;
+            const cursorPosition = input.selectionStart; // 현재 커서 위치 저장
+            const value = input.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
+            input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 3자리마다 , 추가
+            const newCursorPosition = cursorPosition + (input.value.length - value.length); // 쉼표 추가 후 커서 위치 조정
+            input.setSelectionRange(newCursorPosition, newCursorPosition); // 커서 위치 복원
+        });
+
+        document.getElementById('vnd-to-krw').addEventListener('input', (event) => {
+            const input = event.target;
+            const cursorPosition = input.selectionStart; // 현재 커서 위치 저장
+            const value = input.value.replace(/[^0-9]/g, ''); // 숫자만 남기기
+            input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 3자리마다 , 추가
+            const newCursorPosition = cursorPosition + (input.value.length - value.length); // 쉼표 추가 후 커서 위치 조정
+            input.setSelectionRange(newCursorPosition, newCursorPosition); // 커서 위치 복원
+        });
     </script>
 
     <script src="renderer.js"></script>

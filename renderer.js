@@ -258,6 +258,37 @@ window.addEventListener('DOMContentLoaded', () => {
         alert(`스크래핑 오류: ${error}`);
         resetScrapeStatus();
     });
+
+    const exchangeBtn = document.getElementById('exchange-btn');
+    if (exchangeBtn) {
+        exchangeBtn.addEventListener('click', async () => {
+            const status = document.getElementById('exchange-status');
+            status.textContent = '⏳';
+            try {
+                const rates = await window.electronAPI.runExchange(); // exchange.js 실행
+                console.log('환율 데이터:', rates);
+
+                // UI 업데이트 (100VND → KRW)
+                document.getElementById('naver-rate').textContent = rates.naver || '-';
+                document.getElementById('cross-rate').textContent = rates.cross || '-';
+                document.getElementById('wirebarley-rate').textContent = rates.wirebarley || '-';
+
+                // // 환율(1KRW → VND) 계산 및 UI 업데이트
+                const naverVnd = rates.naver ? (1 / rates.naver * 100).toFixed(2) : '-';
+                const crossVnd = rates.cross ? (1 / rates.cross * 100).toFixed(2) : '-';
+                const wirebarleyVnd = rates.wirebarley ? (1 / rates.wirebarley * 100).toFixed(2) : '-';
+
+                document.getElementById('naver-vnd-rate').textContent = naverVnd !== '-' ? `${naverVnd}` : '-';
+                document.getElementById('cross-vnd-rate').textContent = crossVnd !== '-' ? `${crossVnd}` : '-';
+                document.getElementById('wirebarley-vnd-rate').textContent = wirebarleyVnd !== '-' ? `${wirebarleyVnd}` : '-';
+
+                status.textContent = '✅';
+            } catch (error) {
+                console.error('환율 크롤링 실패:', error);
+                status.textContent = '❌';
+            }
+        });
+    }
 });
 
 let currentResults = [];

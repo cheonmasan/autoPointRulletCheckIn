@@ -17,6 +17,7 @@ const { runRoulette } = require('./core/roulette');
 const { runEvent } = require('./core/event');
 const { runDetection } = require('./core/detection');
 const { runCreatePost } = require('./core/createPost');
+const { runExchange } = require('./core/exchange');
 
 let mainWindow;
 
@@ -214,4 +215,16 @@ ipcMain.handle('run-settlement6-build', async () => {
     mainWindow.webContents.send('settlement-progress6-build', { current: 1, total: 1 });
     const res = await crawlSite6(2);
     return res || [];
+});
+
+// 환율 조회
+ipcMain.handle('run-exchange', async () => {
+    try {
+        const rates = await runExchange();
+        mainWindow.webContents.send('exchange-progress', { status: 'success', rates });
+        return rates;
+    } catch (error) {
+        mainWindow.webContents.send('exchange-progress', { status: 'error', message: error.message });
+        throw error;
+    }
 });

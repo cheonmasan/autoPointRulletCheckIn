@@ -29,5 +29,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onSettlementProgress4: (callback) => ipcRenderer.on('settlement-progress4', (_event, data) => callback(data)),
     onSettlementProgress5: (callback) => ipcRenderer.on('settlement-progress5', (_event, data) => callback(data)),
     onSettlementProgress6Zen: (callback) => ipcRenderer.on('settlement-progress6-zen', (_event, data) => callback(data)),
-    onSettlementProgress6Build: (callback) => ipcRenderer.on('settlement-progress6-build', (_event, data) => callback(data))
+    onSettlementProgress6Build: (callback) => ipcRenderer.on('settlement-progress6-build', (_event, data) => callback(data)),
+    runExchange: () => ipcRenderer.invoke('run-exchange')
 });
