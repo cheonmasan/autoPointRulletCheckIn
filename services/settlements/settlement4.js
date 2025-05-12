@@ -21,6 +21,7 @@ async function crawlSite4(index) {
             '--disable-blink-features=AutomationControlled', // 자동화 탐지 방지
             '--disable-infobars', // "Chrome이 자동화 소프트웨어에 의해 제어되고 있습니다" 메시지 숨김
             '--window-size=1920,1080', // 브라우저 창 크기 설정
+            '--ignore-certificate-errors', // SSL 인증서 오류 무시
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' // 일반적인 사용자 에이전트 설정
         ],
         defaultViewport: null, // 기본 뷰포트 비활성화 (전체 화면 사용)
