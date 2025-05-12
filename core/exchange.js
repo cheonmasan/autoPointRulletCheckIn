@@ -19,24 +19,31 @@ const naverExchange = async () => {
 
 const crossExchange = async () => {
     try {
-        const browser = await puppeteer.launch({ headless: false });
+        const browser = await puppeteer.launch({ headless: 'new' });
         const page = await browser.newPage();
-        await page.goto('https://crossenf.com'); // 예시 URL
+        await page.goto('https://crossenf.com', { waitUntil: 'networkidle2' }); // Wait for the page to fully load
 
         // CNY를 VND로 변경
+        await page.waitForSelector('.choose-nation'); // Ensure the dropdown is available
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await page.click('.choose-nation'); // 드롭다운 열기
-        await page.waitForSelector('li[ng-repeat="country in remit.remitCountryInfoList"]');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await page.waitForSelector('ul.dropdown-menu'); // 드롭다운 메뉴가 로드될 때까지 대기
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await page.evaluate(() => {
-            const vndOption = Array.from(document.querySelectorAll('li[ng-repeat="country in remit.remitCountryInfoList"] a')).find(el => el.textContent.includes('베트남 (VND)'));
+            const vndOption = Array.from(document.querySelectorAll('ul.dropdown-menu li a')).find(el => el.textContent.includes('베트남 (VND)'));
             if (vndOption) vndOption.click();
         });
-
+        await new Promise(resolve => setTimeout(resolve, 1000));
         // 크로스 환율 정보 추출
         await page.waitForSelector('.sub_described_info span.ng-binding');
-        const rate = await page.$eval('.sub_described_info span.ng-binding', el => el.textContent.trim());
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const rateText = await page.$eval('.sub_described_info span.ng-binding', el => el.textContent.trim());
+        const rate = rateText.split('KRW')[0]; // Extract only the numeric part
+        let data = rate.trim()
 
         await browser.close();
-        return rate;
+        return data;
     } catch (error) {
         console.error('Error fetching Cross exchange rate:', error);
         throw error;
@@ -51,15 +58,20 @@ const wirebarleyExchange = async () => {
 
         // "They Receive" 드롭다운에서 VND 선택
         await page.click('.currency-selector'); // 드롭다운 열기
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await page.waitForSelector('.currency-option');
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await page.evaluate(() => {
             const vndOption = Array.from(document.querySelectorAll('.currency-option')).find(el => el.textContent.includes('VND'));
             if (vndOption) vndOption.click();
         });
 
+        await new Promise(resolve => setTimeout(resolve, 1000));
         // Wirebarley 환율 정보 추출
         await page.waitForSelector('p.font-medium.text-[0.8125rem].text-center');
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const rateText = await page.$eval('p.font-medium.text-[0.8125rem].text-center', el => el.textContent.trim());
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // "1,000 KRW = 18,137.83 VND"에서 숫자 부분만 추출
         const rate = rateText.match(/=\s([\d,\.]+)\sVND/)[1];
@@ -75,14 +87,14 @@ const wirebarleyExchange = async () => {
 
 const runExchange = async () => {  
     try {
-        const naverRate = await naverExchange();
+        // const naverRate = await naverExchange();
         // const crossRate = await crossExchange();
-        // const wirebarleyRate = await wirebarleyExchange();
+        const wirebarleyRate = await wirebarleyExchange();
 
         return {
-            naver: naverRate,
-            cross: '5.46',
-            wirebarley: '5.55'
+            naver: 0,
+            cross: 0,
+            wirebarley: wirebarleyRate
         };
     } catch (error) {
         console.error('Error fetching exchange rates:', error);
