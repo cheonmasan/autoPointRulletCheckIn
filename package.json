@@ -30,7 +30,7 @@
     "build": {
         "appId": "com.auto.point.rullet.checkin",
         "productName": "매크로",
-        "asar": false,
+        "asar": true,
         "directories": {
             "output": "dist"
         },

@@ -478,11 +478,9 @@
 
             const naverVnd = (krwAmount / naverRate) * 100;
             const crossVnd = crossRate ? (krwAmount / crossRate) * 100 : null;
-            const wirebarleyVnd = wirebarleyRate ? (krwAmount / wirebarleyRate) * 100 : null;
 
             let result = `네이버: ${naverVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
             if (crossVnd !== null) result += `<br>크로스: ${crossVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
-            if (wirebarleyVnd !== null) result += `<br>와이어바알리: ${wirebarleyVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
 
             document.getElementById('krw-to-vnd-result').innerHTML = result;
         });
