@@ -123,3 +123,201 @@ label {
     font-size: 0.9em;
     color: #555;
 }
+
+    h3 {
+        margin: 3px 0 0 0; /* 위아래 5px, 좌우 0px */
+    }
+    
+    body {
+        font-family: sans-serif;
+        padding: 20px;
+    }
+
+    textarea {
+        width: 100%;
+        height: 100px;
+        margin-top: 10px;
+        resize: none;
+        font-size: 12px;
+    }
+
+    button {
+        margin-top: 10px;
+        margin-right: 10px;
+        padding: 8px 16px;
+    }
+
+    span.status {
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    .tab {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-right: 10px;
+        background-color: #f1f1f1;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .tab.active {
+        background-color: #ccc;
+        font-weight: bold;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-top: none;
+    }
+
+    span.progress {
+        color: blue;
+        margin-left: 10px;
+    }
+
+    span.complete {
+        color: green;
+        margin-left: 10px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #f1f1f1;
+    }
+
+    h1 {
+        font-size: 15px;
+    }
+
+    .blue-text {
+        color: blue;
+        font-weight: bold;
+    }
+
+    .red-text {
+        color: red;
+        font-weight: bold;
+    }
+
+    .log-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        /* 3열 */
+        gap: 10px;
+        /* 칸 간격 */
+        margin-top: 20px;
+    }
+
+    .log-item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    #exchange-rate-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    #exchange-rate-table th {
+        font-size: 10px; /* 원하는 크기로 설정 */
+    }
+
+    #exchange-rate-table td {
+        font-size: 10px; /* 원하는 크기로 설정 */
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    #exchange-rate-table th {
+        background-color: #f1f1f1;
+    }
+
+    /* 환율 정보 테이블과 변환 섹션을 나란히 배치 (그리드 레이아웃) */
+    #exchange-rate-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    #exchange-rate-container > table {
+        width: 90%;
+        /* 테이블 크기 줄이기 */
+        justify-self: start;
+    }
+
+    #exchange-rate-container > .exchange-conversion-wrapper {
+        justify-self: start;
+    }
+
+    .exchange-conversion label {
+        font-size: 10px;
+        display: block;
+    }
+
+    .exchange-conversion-inner {
+        display: flex;
+        align-items: center;      /* 세로 가운데 정렬 */
+        gap: 5px;
+    }
+    .exchange-conversion-inner input {
+        height: 32px;
+        font-size: 13px;
+        box-sizing: border-box;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        line-height: 1.2;
+        vertical-align: middle;
+    }
+
+    .exchange-conversion-inner button {
+        height: 32px;
+        font-size: 13px;
+        box-sizing: border-box;
+        padding: 0 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        line-height: 1.2;
+        vertical-align: middle;
+        position: relative;
+        top: -5px; /* 필요시 -1px ~ -2px로 조정 */
+    }
+
+    .exchange-conversion input {
+        flex: 1;
+        min-width: 80px;
+    }
+
+    .exchange-conversion-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #krw-to-vnd-result,
+    #vnd-to-krw-result {
+        font-size: 13px;
+    }

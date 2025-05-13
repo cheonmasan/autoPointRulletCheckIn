@@ -8,248 +8,102 @@
     <link rel="stylesheet" href="styles.css" />
     <title>온에어 슬롯 커뮤니티</title>
     <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            margin-bottom: 10px;
-            resize: none;
-            font-size: 10px;
-        }
-
-        button {
-            margin-top: 10px;
-            margin-right: 10px;
-            padding: 8px 16px;
-        }
-
-        span.status {
-            font-weight: bold;
-            margin-left: 5px;
-        }
-
-        .tab {
-            display: inline-block;
-            padding: 10px 20px;
-            margin-right: 10px;
-            background-color: #f1f1f1;
-            cursor: pointer;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .tab.active {
-            background-color: #ccc;
-            font-weight: bold;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-top: none;
-        }
-
-        span.progress {
-            color: blue;
-            margin-left: 10px;
-        }
-
-        span.complete {
-            color: green;
-            margin-left: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th,
-        td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f1f1f1;
-        }
-
-        h1 {
-            font-size: 15px;
-        }
-
-        .blue-text {
-            color: blue;
-            font-weight: bold;
-        }
-
-        .red-text {
-            color: red;
-            font-weight: bold;
-        }
-
-        .log-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            /* 3열 */
-            gap: 10px;
-            /* 칸 간격 */
-            margin-top: 20px;
-        }
-
-        .log-item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            resize: none;
-            font-size: 12px;
-        }
-
-        #exchange-rate-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        #exchange-rate-table th,
-        #exchange-rate-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-
-        #exchange-rate-table th {
-            background-color: #f1f1f1;
-        }
-
-        #exchange-rate-container {
-            margin-top: 20px;
-        }
-
-        .exchange-conversion {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .exchange-conversion label {
-            flex: 0.2;
-            margin-right: 10px;
-        }
-
-        .exchange-conversion input {
-            flex: 0.3;
-            margin-right: 10px;
-        }
-
-        .exchange-conversion button {
-            margin-right: 10px;
-        }
-
-        .exchange-conversion span {
-            flex: 1;
-        }
     </style>
 </head>
 
 <body>
     <div>
-        <div id="tab1" class="tab active" onclick="switchTab(1)">출석,포마,룰렛,로또</div>
+        <div id="tab1" class="tab active" onclick="switchTab(1)">온에어 실시간 매크로</div>
         <div id="tab2" class="tab" onclick="switchTab(2)">활동왕 찾기</div>
         <div id="tab3" class="tab" onclick="switchTab(3)">정산</div>
     </div>
 
     <div id="content1" class="tab-content active">
-        <h1>✅ 자동 출석체크, 자동 포인트마트 구매, 자동 룰렛 3번 돌리기, 로또</h1>
         <div>
             <button id="checkin-btn">출석체크 <span id="checkin-status" class="status">❌</span></button>
             <button id="pointmart-btn">포인트마트 <span id="pointmart-status" class="status">❌</span></button>
             <button id="roulette-btn">룰렛 <span id="roulette-status" class="status">❌</span></button>
             <button id="event-btn">이벤트 <span id="event-status" class="status">❌</span></button>
             <button id="detection-btn">탐지 <span id="detection-status" class="status">❌</span></button>
-            <button id="createpost-btn">게시글 작성 <span id="createpost-status" class="status">❌</span></button>
+            <button id="createpost-btn">게시글작성 <span id="createpost-status" class="status">❌</span></button>
+            <button id="exchange-btn">환율 <span id="exchange-status" class="status">❌</span></button>
         </div>
 
         <!-- 로그를 2x3 그리드로 배치 -->
         <div class="log-grid">
             <div class="log-item">
-                <h3>📗 룰렛 로그</h3>
+                <h3>🎡 룰렛 로그</h3>
                 <textarea id="roulette-log" readonly></textarea>
             </div>
             <div class="log-item">
-                <h3>📙 포인트 마트 로그</h3>
+                <h3>🛒 포인트마트 로그</h3>
                 <textarea id="pointmart-log" readonly></textarea>
             </div>
             <div class="log-item">
-                <h3>📘 출석 로그</h3>
+                <h3>📝 출석 로그</h3>
                 <textarea id="checkin-log" readonly></textarea>
             </div>
             <div class="log-item">
-                <h3>📕 이벤트 로그</h3>
+                <h3>🎉 이벤트 로그</h3>
                 <textarea id="event-log" readonly></textarea>
             </div>
             <div class="log-item">
-                <h3>📋 탐지 로그</h3>
+                <h3>🕵️ 탐지 로그</h3>
                 <textarea id="detection-log" readonly></textarea>
             </div>
             <div class="log-item">
-                <h3>📋 게시글 작성 로그</h3>
+                <h3>📋 게시글작성 로그</h3>
                 <textarea id="createpost-log" readonly></textarea>
             </div>
-        </div>
-
-        <div id="exchange-rate-container">
-            <h1>✅ 환율 정보 <button id="exchange-btn">환율 크롤링 <span id="exchange-status" class="status">❌</span></button></h1>
-            <table id="exchange-rate-table">
-                <thead>
-                    <tr>
-                        <th>서비스</th>
-                        <th>환율(100VND->KRW)</th>
-                        <th>환율(1KRW->VND)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>네이버</td>
-                        <td id="naver-rate">-</td>
-                        <td id="naver-vnd-rate">-</td>
-                    </tr>
-                    <tr>
-                        <td>크로스</td>
-                        <td id="cross-rate">-</td>
-                        <td id="cross-vnd-rate">-</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>환율 변환</h2>
-            <div class="exchange-conversion">
-                <label for="krw-to-vnd">한국 돈 (KRW) → 베트남 돈 (VND):</label>
-                <input type="text" id="krw-to-vnd" placeholder="KRW 금액 입력" />
-                <button id="convert-krw-to-vnd">변환</button>
-                <span id="krw-to-vnd-result">-</span>
+            <div class="log-item">
+                <div id="exchange-rate-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: flex-start;">
+                    <div>
+                        <h3>💱 환율</h3>
+                        <table id="exchange-rate-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>환율<br>(100VND->KRW)</th>
+                                    <th>환율<br>(1KRW->VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>네이버</td>
+                                    <td id="naver-rate">-</td>
+                                    <td id="naver-vnd-rate">-</td>
+                                </tr>
+                                <tr>
+                                    <td>크로스</td>
+                                    <td id="cross-rate">-</td>
+                                    <td id="cross-vnd-rate">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="exchange-conversion-wrapper">
+                        <label for="krw-to-vnd">한국 돈 (KRW) → 베트남 돈 (VND):</label>
+                        <div class="exchange-conversion-inner">
+                            <input type="text" id="krw-to-vnd" placeholder="KRW 금액 입력" />
+                            <button id="convert-krw-to-vnd">변환</button>
+                        </div>
+                        <span id="krw-to-vnd-result">-</span>
+                        <label for="vnd-to-krw">베트남 돈 (VND) → 한국 돈 (KRW):</label>
+                        <div class="exchange-conversion-inner">
+                            <input type="text" id="vnd-to-krw" placeholder="VND 금액 입력" />
+                            <button id="convert-vnd-to-krw">변환</button>
+                        </div>
+                        <span id="vnd-to-krw-result">-</span>
+                    </div>
+                </div>
             </div>
-            <div class="exchange-conversion">
-                <label for="vnd-to-krw">베트남 돈 (VND) → 한국 돈 (KRW):</label>
-                <input type="text" id="vnd-to-krw" placeholder="VND 금액 입력" />
-                <button id="convert-vnd-to-krw">변환</button>
-                <span id="vnd-to-krw-result">-</span>
+            <div class="log-item">
+                <h3>미구현 로그</h3>
+                <textarea id="no-dev-1-log" readonly></textarea>
+            </div>
+            <div class="log-item">
+                <h3>미구현 로그</h3>
+                <textarea id="no-dev-2-log" readonly></textarea>
             </div>
         </div>
     </div>
@@ -496,7 +350,7 @@
             }
 
             const krwAmount = (vndAmount * naverRate) / 100;
-            document.getElementById('vnd-to-krw-result').textContent = `네이버: ${krwAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+            document.getElementById('vnd-to-krw-result').textContent = `네이버: ${krwAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} WON`;
         });
 
         document.getElementById('krw-to-vnd').addEventListener('input', (event) => {
