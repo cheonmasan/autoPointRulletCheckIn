@@ -1,6 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
+const fs = require('fs'); // 파일 시스템 모듈 추가
 
 const naverExchange = async () => {
     try {
@@ -50,56 +51,19 @@ const crossExchange = async () => {
     }
 };
 
-const wirebarleyExchange = async () => {
+
+const runExchange = async () => {  
     try {
-        const browser = await puppeteer.launch({ headless: false });
-        const page = await browser.newPage();
-        await page.goto('https://www.wirebarley.com/'); // Wirebarley URL
-
-        // "They Receive" 드롭다운에서 VND 선택
-        await page.click('.currency-selector'); // 드롭다운 열기
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        await page.waitForSelector('.currency-option');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        await page.evaluate(() => {
-            const vndOption = Array.from(document.querySelectorAll('.currency-option')).find(el => el.textContent.includes('VND'));
-            if (vndOption) vndOption.click();
-        });
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Wirebarley 환율 정보 추출
-        await page.waitForSelector('p.font-medium.text-[0.8125rem].text-center');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const rateText = await page.$eval('p.font-medium.text-[0.8125rem].text-center', el => el.textContent.trim());
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // "1,000 KRW = 18,137.83 VND"에서 숫자 부분만 추출
-        const rate = rateText.match(/=\s([\d,\.]+)\sVND/)[1];
-
-        await browser.close();
-        return rate;
-    } catch (error) {
-        console.error('Error fetching Wirebarley exchange rate:', error);
+        const naverRate = await naverExchange();        
+        const crossRate = await crossExchange(); 
+        return {
+            naver: naverRate,
+            cross: crossRate
+        };
+    } catch (error) { 
+        console.error('Error fetching exchange rates:', error);    
         throw error;
     }
 }
 
-
-const runExchange = async () => {  
-    try {
-        // const naverRate = await naverExchange();
-        // const crossRate = await crossExchange();
-        const wirebarleyRate = await wirebarleyExchange();
-
-        return {
-            naver: 0,
-            cross: 0,
-            wirebarley: wirebarleyRate
-        };
-    } catch (error) {
-        console.error('Error fetching exchange rates:', error);
-        throw error;
-    }
-};
-
-module.exports = { runExchange, naverExchange, crossExchange, wirebarleyExchange };
+module.exports = { runExchange };

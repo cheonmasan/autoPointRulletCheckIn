@@ -173,7 +173,6 @@
         <div id="tab1" class="tab active" onclick="switchTab(1)">출석,포마,룰렛,로또</div>
         <div id="tab2" class="tab" onclick="switchTab(2)">활동왕 찾기</div>
         <div id="tab3" class="tab" onclick="switchTab(3)">정산</div>
-        <div id="tab4" class="tab" onclick="switchTab(4)">환율 정보</div>
     </div>
 
     <div id="content1" class="tab-content active">
@@ -212,6 +211,45 @@
             <div class="log-item">
                 <h3>📋 게시글 작성 로그</h3>
                 <textarea id="createpost-log" readonly></textarea>
+            </div>
+        </div>
+
+        <div id="exchange-rate-container">
+            <h1>✅ 환율 정보 <button id="exchange-btn">환율 크롤링 <span id="exchange-status" class="status">❌</span></button></h1>
+            <table id="exchange-rate-table">
+                <thead>
+                    <tr>
+                        <th>서비스</th>
+                        <th>환율(100VND->KRW)</th>
+                        <th>환율(1KRW->VND)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>네이버</td>
+                        <td id="naver-rate">-</td>
+                        <td id="naver-vnd-rate">-</td>
+                    </tr>
+                    <tr>
+                        <td>크로스</td>
+                        <td id="cross-rate">-</td>
+                        <td id="cross-vnd-rate">-</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>환율 변환</h2>
+            <div class="exchange-conversion">
+                <label for="krw-to-vnd">한국 돈 (KRW) → 베트남 돈 (VND):</label>
+                <input type="text" id="krw-to-vnd" placeholder="KRW 금액 입력" />
+                <button id="convert-krw-to-vnd">변환</button>
+                <span id="krw-to-vnd-result">-</span>
+            </div>
+            <div class="exchange-conversion">
+                <label for="vnd-to-krw">베트남 돈 (VND) → 한국 돈 (KRW):</label>
+                <input type="text" id="vnd-to-krw" placeholder="VND 금액 입력" />
+                <button id="convert-vnd-to-krw">변환</button>
+                <span id="vnd-to-krw-result">-</span>
             </div>
         </div>
     </div>
@@ -403,54 +441,6 @@
         </table>
     </div>
 
-    <div id="content4" class="tab-content">
-        <h1>✅ 환율 정보</h1>
-        <button id="exchange-btn">환율 크롤링 <span id="exchange-status" class="status">❌</span></button>
-        <div id="exchange-rate-container">
-            <h2>환율 정보</h2>
-            <table id="exchange-rate-table">
-                <thead>
-                    <tr>
-                        <th>서비스</th>
-                        <th>환율(100VND->KRW)</th>
-                        <th>환율(1KRW->VND)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>네이버</td>
-                        <td id="naver-rate">-</td>
-                        <td id="naver-vnd-rate">-</td>
-                    </tr>
-                    <tr>
-                        <td>크로스</td>
-                        <td id="cross-rate">-</td>
-                        <td id="cross-vnd-rate">-</td>
-                    </tr>
-                    <tr>
-                        <td>와이어바알리</td>
-                        <td id="wirebarley-rate">-</td>
-                        <td id="wirebarley-vnd-rate">-</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>환율 변환</h2>
-            <div class="exchange-conversion">
-                <label for="krw-to-vnd">한국 돈 (KRW) → 베트남 돈 (VND):</label>
-                <input type="text" id="krw-to-vnd" placeholder="KRW 금액 입력" />
-                <button id="convert-krw-to-vnd">변환</button>
-                <span id="krw-to-vnd-result">-</span>
-            </div>
-            <div class="exchange-conversion">
-                <label for="vnd-to-krw">베트남 돈 (VND) → 한국 돈 (KRW):</label>
-                <input type="text" id="vnd-to-krw" placeholder="VND 금액 입력" />
-                <button id="convert-vnd-to-krw">변환</button>
-                <span id="vnd-to-krw-result">-</span>
-            </div>
-        </div>
-    </div>
-
     <script>
         function switchTab(tabNumber) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -480,7 +470,6 @@
             const krwAmount = parseFloat(krwInput); // Parse as float
             const naverRate = parseFloat(document.getElementById('naver-rate').textContent);
             const crossRate = parseFloat(document.getElementById('cross-rate').textContent);
-            const wirebarleyRate = parseFloat(document.getElementById('wirebarley-rate').textContent);
 
             if (isNaN(krwAmount) || isNaN(naverRate)) {
                 document.getElementById('krw-to-vnd-result').textContent = 'Invalid input or rate';

@@ -4,6 +4,7 @@ const { runCheckIn } = require('../core/checkin');
 const { runPointMart } = require('../core/pointMart');
 const { runRoulette } = require('../core/roulette');
 const { runDetection } = require('../core/detection');
+const { runExchange } = require('../core/exchange');
 const { checkinGetData } = require('../services/scraper');
 const { sendMessage } = require('../services/telegram');
 const { logger } = require('../utils/loggerHelper')
@@ -74,7 +75,10 @@ const scheduleTasks = (updateStatus) => {
 
     cron.schedule("*/5 * * * *", async () => {
         updateStatus('detection', true)
-        await runDetection();
+        await Promise.all([
+            runDetection(),
+            runExchange()
+        ]);
         updateStatus('detection', false)
     });
 };
