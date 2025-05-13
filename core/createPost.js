@@ -6,9 +6,9 @@ const puppeteer = require('puppeteer');
 const { shuffle } = require('../utils/helpers');
 const { xaiCall } = require('../api/xaiCall');
 const { getUploadedPosts, markPostAsUploaded } = require('../utils/db');
-dotenv = require('dotenv').config();
-const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+const fs = require('fs');
 const axios = require('axios');
 const os = require('os');
 
@@ -161,8 +161,8 @@ const runCreatePost = async () => {
                             await page.waitForSelector(imageInputSelector, { timeout: 5000 });
 
                             // 이미지 URL을 로컬 파일로 다운로드
-                            const tempDir = os.tmpdir(); // 임시 디렉토리
-                            const localImagePath = path.join(tempDir, `image${i + 1}.jpg`);
+                            const homeDir = os.homedir(); // 홈 디렉토리
+                            const localImagePath = path.join(homeDir, `image${i + 1}.jpg`);
                             await downloadImage(images[i], localImagePath);
 
                             // 로컬 파일 경로를 업로드

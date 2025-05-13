@@ -2,8 +2,8 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { insertPost } = require('../utils/db'); // DB 삽입 함수 가져오기
 const moment = require('moment-timezone');
-const { logger } = require('../utils/loggerHelper');
-dotenv = require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // 출석 체크 재시도용 함수
 const retry = async (fn, maxRetries = 3, delay = 5000) => {

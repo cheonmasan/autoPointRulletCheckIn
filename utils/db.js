@@ -1,9 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const moment = require('moment-timezone'); // moment-timezone 모듈 추가
+const os = require('os'); // Import os module
 
-// DB 초기화
-const db = new sqlite3.Database(path.resolve(__dirname, '../commentHistory.db'));
+// Set the database path to always point to the user's home directory's commentHistory.db
+const dbPath = path.join(os.homedir(), 'commentHistory.db');
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
     db.run(`

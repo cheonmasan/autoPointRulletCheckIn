@@ -1,9 +1,8 @@
 const { connect } = require("puppeteer-real-browser");
 const moment = require('moment-timezone');
-const dotenv = require('dotenv');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const TwoCaptcha = require("@2captcha/captcha-solver")
-dotenv.config();
-dotenv.config();
 
 async function crawlSite0(index) {
     const URL = process.env[`settlement0_site${index}_URL`];

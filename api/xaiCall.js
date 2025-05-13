@@ -1,5 +1,6 @@
 const axios = require("axios");
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 let XAI_API_TOKEN = process.env.XAI_API_TOKEN; // 환경변수에서 API 키 가져오기
 
 if (!XAI_API_TOKEN) {

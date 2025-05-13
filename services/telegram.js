@@ -1,7 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
-const dotenv = require('dotenv');
 const { logger } = require('../utils/loggerHelper'); // 로거 가져오기
-dotenv.config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
 
 const token1 = process.env.TELEGRAM_TOKEN1;
 const chatId1 = process.env.TELEGRAM_CHAT_ID1;

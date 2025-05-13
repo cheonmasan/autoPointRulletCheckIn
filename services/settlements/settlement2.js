@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const moment = require('moment-timezone');
-const dotenv = require('dotenv');
-dotenv.config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 async function crawlSite2(index) {
     const URL = process.env[`settlement2_site${index}_URL`];
