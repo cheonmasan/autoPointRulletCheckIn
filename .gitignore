@@ -49,6 +49,6 @@ Thumbs.db
 *.wmv
 
 .env
-commentHistory.db
+*.db
 
 runTest.js
