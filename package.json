@@ -1,6 +1,6 @@
 {
     "name": "auto-point-rullet-check-in",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Electron 기반 자동 출석 및 룰렛 앱",
     "main": "main.js",
     "scripts": {
