@@ -477,7 +477,7 @@
             }
 
             const naverVnd = (krwAmount / naverRate) * 100;
-            const crossVnd = crossRate ? (krwAmount / crossRate) * 100 : null;
+            const crossVnd = crossRate ? ((krwAmount-5000) / crossRate) * 100 : null;
 
             let result = `네이버: ${naverVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
             if (crossVnd !== null) result += `<br>크로스: ${crossVnd.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} VND`;
@@ -496,7 +496,7 @@
             }
 
             const krwAmount = (vndAmount * naverRate) / 100;
-            document.getElementById('vnd-to-krw-result').textContent = krwAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            document.getElementById('vnd-to-krw-result').textContent = `네이버: ${krwAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
         });
 
         document.getElementById('krw-to-vnd').addEventListener('input', (event) => {
