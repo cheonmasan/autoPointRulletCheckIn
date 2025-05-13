@@ -11,11 +11,11 @@ const globalVars = require('../globalVariable'); // 전역 변수 가져오기
 
 const scheduleTasks = (updateStatus) => {
     cron.schedule("*/30 * * * *", async () => {
-        logger('checkin', `출석 global.checkinIsRunning=${globalVars.checkinIsRunning} global.checkinIsSend=${globalVars.checkinIsSend}`);
-        logger('pointmart', `포인트 마트 global.pointmartIsRunning=${globalVars.pointmartIsRunning} global.pointmartIsSend=${globalVars.pointmartIsSend}`);
+        logger('checkin', `출석 globalVars.checkinIsRunning=${globalVars.checkinIsRunning} globalVars.checkinIsSend=${globalVars.checkinIsSend}`);
+        logger('pointmart', `포인트 마트 globalVars.pointmartIsRunning=${globalVars.pointmartIsRunning} globalVars.pointmartIsSend=${globalVars.pointmartIsSend}`);
 
         globalVars.checkInCount = await checkinGetData();
-        logger('checkin', `global.checkInCount ${globalVars.checkInCount}`);
+        logger('checkin', `globalVars.checkInCount ${globalVars.checkInCount}`);
 
         if (globalVars.checkinIsRunning) {
             // 이미 실행 중

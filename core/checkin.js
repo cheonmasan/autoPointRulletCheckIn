@@ -45,14 +45,14 @@ const runCheckIn = async (start, end) => {
 
         let randomData = rand(start, end);
         logger('checkin', `랜덤 ${randomData}`);
-        global.checkInCount = await checkinGetData();
+        globalVars.checkInCount = await checkinGetData();
         const { ID_DATA2, TIME } = getConfig();
 
         for (let i = 0; i <= randomData; i++) {
-            if (global.checkInCount >= randomData) {
+            if (globalVars.checkInCount >= randomData) {
                 sendMessage("금일 출석 매크로 완료되었습니다.");
-                global.running = false;
-                global.isSend = false;
+                globalVars.checkinIsRunning = false;
+                globalVars.checkinIsSend = false;
                 i = randomData;
             } else {
                 try {
@@ -84,8 +84,8 @@ const runCheckIn = async (start, end) => {
                     let times = parseInt(moment().tz("Asia/Seoul").format("HH"));
                     if (times >= 23) {
                         sendMessage("금일 출석 매크로 완료되었습니다.");
-                        global.running = false;
-                        global.isSend = false;
+                        globalVars.checkinIsRunning = false;
+                        globalVars.checkinIsSend = false;
                         i = randomData;
                     } else {
                         if (i < 10) {
@@ -97,8 +97,8 @@ const runCheckIn = async (start, end) => {
                         }
                         if (i == randomData) {
                             sendMessage("금일 출석 매크로 완료되었습니다.");
-                            global.running = false;
-                            global.isSend = false;
+                            globalVars.checkinIsRunning = false;
+                            globalVars.checkinIsSend = false;
                         }
                     }
                     logger('checkin', `runCheckIn 한국 시간: ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`, i, "/", randomData, ID_DATA2[i], "약", count, "분 후");
@@ -111,13 +111,13 @@ const runCheckIn = async (start, end) => {
         }
     } catch (e) {
         logger('checkin', `출석 체크 치명적인 에러 발생1: ${e.message}, Stack=${e.stack}`);
-        global.running = false;
-        global.isSend = false;
+        globalVars.checkinIsRunning = false;
+        globalVars.checkinIsSend = false;
     } finally {
         try {
             await browser.close();
-            global.running = false;
-            global.isSend = false;
+            globalVars.checkinIsRunning = false;
+            globalVars.checkinIsSend = false;
             logger('checkin', `runCheckIn end", ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`);
         } catch (e) {
             logger('checkin', `출석 체크 치명적인 에러 발생2: ${e.message}, Stack=${e.stack}`);

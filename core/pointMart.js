@@ -150,8 +150,8 @@ const runPointMart = async () => {
         globalVars.pointmartIsSend = false;
     } catch (e) {
         logger('pointmart', `포인트 마트 치명적인 에러 발생3: ${e.message}, Stack=${e.stack}`);
-        global.running1 = false;
-        global.isSend1 = false;
+        globalVars.pointmartIsRunning = false;
+        globalVars.pointmartIsSend = false;
     } finally {
         try {
             await browser.close();
@@ -159,8 +159,8 @@ const runPointMart = async () => {
             logger('pointmart', `runPointMart end ${now}`);
         } catch (e) {
             logger('pointmart', `포인트 마트 치명적인 에러 발생: ${e.message}, Stack=${e.stack}`);
-            global.running1 = false;
-            global.isSend1 = false;
+            globalVars.pointmartIsRunning = false;
+            globalVars.pointmartIsSend = false;
         }
     }
 };
