@@ -241,7 +241,7 @@ label {
     }
 
     #exchange-rate-table th {
-        font-size: 10px; /* 원하는 크기로 설정 */
+        font-size: 11px; /* 원하는 크기로 설정 */
     }
 
     #exchange-rate-table td {
@@ -249,6 +249,7 @@ label {
         border: 1px solid #ccc;
         padding: 8px;
         text-align: left;
+        font-weight: bold;
     }
 
     #exchange-rate-table th {
