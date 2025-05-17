@@ -137,7 +137,7 @@ const runPointMart = async () => {
                         break;
                     }
                 } else {
-                    i = 30;
+                    i = 50;
                 }
             } catch (e) {
                 logger('pointmart', `포인트 마트 에러 발생2: ID=${ID_DATA2[i]}, 메시지=${e.message}, Stack=${e.stack}`);
