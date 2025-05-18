@@ -50,5 +50,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     runSettlement3Hyungjae: () => ipcRenderer.invoke('run-settlement3-hyungjae'),
     runSettlement3Hawaii: () => ipcRenderer.invoke('run-settlement3-hawaii'),
     runSettlement3Samsung: () => ipcRenderer.invoke('run-settlement3-samsung'),
-    runSettlement3Seven: () => ipcRenderer.invoke('run-settlement3-seven')
+    runSettlement3Seven: () => ipcRenderer.invoke('run-settlement3-seven'),
+    runSettlement4Build: () => ipcRenderer.invoke('run-settlement4-build'),
+    runSettlement4Play: () => ipcRenderer.invoke('run-settlement4-play'),
+    runSettlement4Zen: () => ipcRenderer.invoke('run-settlement4-zen')
 });

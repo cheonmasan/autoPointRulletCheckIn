@@ -331,34 +331,31 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('settlementStatus4').className = 'complete';
     });
 
-    document.getElementById('settlementBtn5')?.addEventListener('click', async () => {
-        document.getElementById('settlementStatus5').textContent = '진행중...';
-        document.getElementById('settlementStatus5').className = 'progress';
-        const results = await window.electronAPI.runSettlement5();
-        document.getElementById('settlementBody5').innerHTML = '';
-        results.forEach(data => addSettlementRow('settlementBody5', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
-        document.getElementById('settlementStatus5').textContent = '완료!';
-        document.getElementById('settlementStatus5').className = 'complete';
+    document.getElementById('settlementBtn4_BUILD')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus4').textContent = '진행중...';
+        document.getElementById('settlementStatus4').className = 'progress';
+        const results = await window.electronAPI.runSettlement4Build();
+        results.forEach(data => addSettlementRow('settlementBody4', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus4').textContent = '완료!';
+        document.getElementById('settlementStatus4').className = 'complete';
     });
 
-    document.getElementById('settlementBtn6-zen')?.addEventListener('click', async () => {
-        document.getElementById('settlementStatus6-zen').textContent = '진행중...';
-        document.getElementById('settlementStatus6-zen').className = 'progress';
-        const results = await window.electronAPI.runSettlement6Zen();
-        document.getElementById('settlementBody6-zen').innerHTML = '';
-        results.forEach(data => addSettlementRow('settlementBody6-zen', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
-        document.getElementById('settlementStatus6-zen').textContent = '완료!';
-        document.getElementById('settlementStatus6-zen').className = 'complete';
+    document.getElementById('settlementBtn4_PLAY')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus4').textContent = '진행중...';
+        document.getElementById('settlementStatus4').className = 'progress';
+        const results = await window.electronAPI.runSettlement4Play();
+        results.forEach(data => addSettlementRow('settlementBody4', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus4').textContent = '완료!';
+        document.getElementById('settlementStatus4').className = 'complete';
     });
-
-    document.getElementById('settlementBtn6-build')?.addEventListener('click', async () => {
-        document.getElementById('settlementStatus6-build').textContent = '진행중...';
-        document.getElementById('settlementStatus6-build').className = 'progress';
-        const results = await window.electronAPI.runSettlement6Build();
-        document.getElementById('settlementBody6-build').innerHTML = '';
-        results.forEach(data => addSettlementRow('settlementBody6-build', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
-        document.getElementById('settlementStatus6-build').textContent = '완료!';
-        document.getElementById('settlementStatus6-build').className = 'complete';
+    
+    document.getElementById('settlementBtn4_ZEN')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus4').textContent = '진행중...';
+        document.getElementById('settlementStatus4').className = 'progress';
+        const results = await window.electronAPI.runSettlement4Zen();
+        results.forEach(data => addSettlementRow('settlementBody4', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus4').textContent = '완료!';
+        document.getElementById('settlementStatus4').className = 'complete';
     });
 
     window.electronAPI.onSettlementProgress0((progress) => {

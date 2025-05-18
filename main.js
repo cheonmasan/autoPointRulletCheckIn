@@ -354,6 +354,30 @@ ipcMain.handle('run-settlement4', async () => {
     return results;
 });
 
+ipcMain.handle('run-settlement4-build', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress4', { current: 1, total: 1 });
+    const res = await crawlSite4(1);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement4-play', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress4', { current: 1, total: 1 });
+    const res = await crawlSite4(2);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement4-zen', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress4', { current: 1, total: 1 });
+    const res = await crawlSite4(3);
+    if (res) results.push(res);
+    return results;
+});
+
 ipcMain.handle('run-settlement5', async () => {
     const results = [];
     for (let i = 1; i <= 3; i++) {
