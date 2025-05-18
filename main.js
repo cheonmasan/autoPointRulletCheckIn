@@ -388,6 +388,30 @@ ipcMain.handle('run-settlement5', async () => {
     return results;
 });
 
+ipcMain.handle('run-settlement5-kkobuki', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress5', { current: 1, total: 1 });
+    const res = await crawlSite5(1);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement5-nimo', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress5', { current: 1, total: 1 });
+    const res = await crawlSite5(2);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement5-hyungjae', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress5', { current: 1, total: 1 });
+    const res = await crawlSite5(3);
+    if (res) results.push(res);
+    return results;
+});
+
 ipcMain.handle('run-settlement6-zen', async () => {
     mainWindow.webContents.send('settlement-progress6-zen', { current: 1, total: 1 });
     const res = await crawlSite6(1);
