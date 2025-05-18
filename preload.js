@@ -31,10 +31,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onSettlementProgress6Zen: (callback) => ipcRenderer.on('settlement-progress6-zen', (_event, data) => callback(data)),
     onSettlementProgress6Build: (callback) => ipcRenderer.on('settlement-progress6-build', (_event, data) => callback(data)),
     runExchange: () => ipcRenderer.invoke('run-exchange'),
-    // 라바
     runSettlement0Lava: () => ipcRenderer.invoke('run-settlement0-lava'),
-    // 네임드
     runSettlement0Named: () => ipcRenderer.invoke('run-settlement0-named'),
-    // 판도라
-    runSettlement0Pandora: () => ipcRenderer.invoke('run-settlement0-pandora')
+    runSettlement0Pandora: () => ipcRenderer.invoke('run-settlement0-pandora'),
+    runSettlement1Nimo: () => ipcRenderer.invoke('run-settlement1-nimo'),
+    runSettlement1Bankcs: () => ipcRenderer.invoke('run-settlement1-bankcs'),
+    runSettlement1Bankking: () => ipcRenderer.invoke('run-settlement1-bankking'),
+    runSettlement1Heavencs: () => ipcRenderer.invoke('run-settlement1-heavencs'),
+    runSettlement1Heavenking: () => ipcRenderer.invoke('run-settlement1-heavenking')
 });

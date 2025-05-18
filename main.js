@@ -190,6 +190,42 @@ ipcMain.handle('run-settlement1', async () => {
     return results;
 });
 
+ipcMain.handle('run-settlement1-nimo', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
+    const res = await crawlSite1(1);
+    if (res) results.push(res);
+    return results;
+});
+ipcMain.handle('run-settlement1-bankcs', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
+    const res = await crawlSite1(2);
+    if (res) results.push(res);
+    return results;
+});
+ipcMain.handle('run-settlement1-bankking', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
+    const res = await crawlSite1(3);
+    if (res) results.push(res);
+    return results;
+});
+ipcMain.handle('run-settlement1-heavencs', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
+    const res = await crawlSite1(4);
+    if (res) results.push(res);
+    return results;
+});
+ipcMain.handle('run-settlement1-heavenking', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
+    const res = await crawlSite1(5);
+    if (res) results.push(res);
+    return results;
+});
+
 ipcMain.handle('run-settlement2', async () => {
     const results = [];
     for (let i = 1; i <= 6; i++) {
