@@ -322,3 +322,9 @@ label {
     #vnd-to-krw-result {
         font-size: 13px;
     }
+
+    .settlement-btn-group {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+    }

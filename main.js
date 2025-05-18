@@ -155,6 +155,31 @@ ipcMain.handle('run-settlement0', async () => {
     return results;
 });
 
+// 라바만
+ipcMain.handle('run-settlement0-lava', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress0', { current: 1, total: 1 });
+    const res = await crawlSite0(1);
+    if (res) results.push(res);
+    return results;
+});
+// 네임드만
+ipcMain.handle('run-settlement0-named', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress0', { current: 1, total: 1 });
+    const res = await crawlSite0(2);
+    if (res) results.push(res);
+    return results;
+});
+// 판도라만
+ipcMain.handle('run-settlement0-pandora', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress0', { current: 1, total: 1 });
+    const res = await crawlSite0(3);
+    if (res) results.push(res);
+    return results;
+});
+
 ipcMain.handle('run-settlement1', async () => {
     const results = [];
     for (let i = 1; i <= 5; i++) {
