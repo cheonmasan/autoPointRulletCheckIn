@@ -144,7 +144,6 @@ ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
     }
 });
 
-// 정산
 ipcMain.handle('run-settlement0', async () => {
     const results = [];
     for (let i = 1; i <= 3; i++) {
@@ -155,7 +154,6 @@ ipcMain.handle('run-settlement0', async () => {
     return results;
 });
 
-// 라바만
 ipcMain.handle('run-settlement0-lava', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress0', { current: 1, total: 1 });
@@ -163,7 +161,7 @@ ipcMain.handle('run-settlement0-lava', async () => {
     if (res) results.push(res);
     return results;
 });
-// 네임드만
+
 ipcMain.handle('run-settlement0-named', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress0', { current: 1, total: 1 });
@@ -171,7 +169,7 @@ ipcMain.handle('run-settlement0-named', async () => {
     if (res) results.push(res);
     return results;
 });
-// 판도라만
+
 ipcMain.handle('run-settlement0-pandora', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress0', { current: 1, total: 1 });
@@ -197,6 +195,7 @@ ipcMain.handle('run-settlement1-nimo', async () => {
     if (res) results.push(res);
     return results;
 });
+
 ipcMain.handle('run-settlement1-bankcs', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
@@ -204,6 +203,7 @@ ipcMain.handle('run-settlement1-bankcs', async () => {
     if (res) results.push(res);
     return results;
 });
+
 ipcMain.handle('run-settlement1-bankking', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
@@ -211,6 +211,7 @@ ipcMain.handle('run-settlement1-bankking', async () => {
     if (res) results.push(res);
     return results;
 });
+
 ipcMain.handle('run-settlement1-heavencs', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
@@ -218,6 +219,7 @@ ipcMain.handle('run-settlement1-heavencs', async () => {
     if (res) results.push(res);
     return results;
 });
+
 ipcMain.handle('run-settlement1-heavenking', async () => {
     const results = [];
     mainWindow.webContents.send('settlement-progress1', { current: 1, total: 1 });
@@ -233,6 +235,54 @@ ipcMain.handle('run-settlement2', async () => {
         const res = await crawlSite2(i);
         if (res) results.push(res);
     }
+    return results;
+});
+
+ipcMain.handle('run-settlement2-samsung', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress2', { current: 1, total: 1 });
+    const res = await crawlSite2(1);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement2-seven', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress2', { current: 1, total: 1 });
+    const res = await crawlSite2(2);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement2-hyungjae', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress2', { current: 1, total: 1 });
+    const res = await crawlSite2(3);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement2-nimo', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress2', { current: 1, total: 1 });
+    const res = await crawlSite2(4);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement2-kkobuki', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress2', { current: 1, total: 1 });
+    const res = await crawlSite2(5);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement2-hawaii', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress2', { current: 1, total: 1 });
+    const res = await crawlSite2(6);
+    if (res) results.push(res);
     return results;
 });
 
