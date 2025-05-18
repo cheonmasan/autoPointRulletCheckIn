@@ -44,5 +44,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     runSettlement2Hyungjae: () => ipcRenderer.invoke('run-settlement2-hyungjae'),
     runSettlement2Nimo: () => ipcRenderer.invoke('run-settlement2-nimo'),
     runSettlement2Kkobuki: () => ipcRenderer.invoke('run-settlement2-kkobuki'),
-    runSettlement2Hawaii: () => ipcRenderer.invoke('run-settlement2-hawaii')
+    runSettlement2Hawaii: () => ipcRenderer.invoke('run-settlement2-hawaii'),
+    runSettlement3Kkobuki: () => ipcRenderer.invoke('run-settlement3-kkobuki'),
+    runSettlement3Nimo: () => ipcRenderer.invoke('run-settlement3-nimo'),
+    runSettlement3Hyungjae: () => ipcRenderer.invoke('run-settlement3-hyungjae'),
+    runSettlement3Hawaii: () => ipcRenderer.invoke('run-settlement3-hawaii'),
+    runSettlement3Samsung: () => ipcRenderer.invoke('run-settlement3-samsung'),
+    runSettlement3Seven: () => ipcRenderer.invoke('run-settlement3-seven')
 });

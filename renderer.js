@@ -267,6 +267,60 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('settlementStatus3').className = 'complete';
     });
 
+    document.getElementById('settlementBtn3_KKOBUKI')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';
+        const results = await window.electronAPI.runSettlement3Kkobuki();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+
+    document.getElementById('settlementBtn3_NIMO')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';
+        const results = await window.electronAPI.runSettlement3Nimo();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+
+    document.getElementById('settlementBtn3_HYUNGJAE')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';
+        const results = await window.electronAPI.runSettlement3Hyungjae();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+
+    document.getElementById('settlementBtn3_HAWAII')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';
+        const results = await window.electronAPI.runSettlement3Hawaii();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+    
+    document.getElementById('settlementBtn3_SAMSUNG')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';
+        const results = await window.electronAPI.runSettlement3Samsung();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+
+    document.getElementById('settlementBtn3_SEVEN')?.addEventListener('click', async () => {
+        document.getElementById('settlementStatus3').textContent = '진행중...';
+        document.getElementById('settlementStatus3').className = 'progress';
+        const results = await window.electronAPI.runSettlement3Seven();
+        results.forEach(data => addSettlementRow('settlementBody3', data.site, data.date, data.join, data.black, data.charge, data.deposit, data.withdraw, data.totalIn, data.totalOut));
+        document.getElementById('settlementStatus3').textContent = '완료!';
+        document.getElementById('settlementStatus3').className = 'complete';
+    });
+
     document.getElementById('settlementBtn4')?.addEventListener('click', async () => {
         document.getElementById('settlementStatus4').textContent = '진행중...';
         document.getElementById('settlementStatus4').className = 'progress';

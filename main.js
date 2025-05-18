@@ -296,6 +296,54 @@ ipcMain.handle('run-settlement3', async () => {
     return results;
 });
 
+ipcMain.handle('run-settlement3-kkobuki', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress3', { current: 1, total: 1 });
+    const res = await crawlSite3(1);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement3-nimo', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress3', { current: 1, total: 1 });
+    const res = await crawlSite3(2);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement3-hyungjae', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress3', { current: 1, total: 1 });
+    const res = await crawlSite3(3);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement3-hawaii', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress3', { current: 1, total: 1 });
+    const res = await crawlSite3(4);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement3-samsung', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress3', { current: 1, total: 1 });
+    const res = await crawlSite3(5);
+    if (res) results.push(res);
+    return results;
+});
+
+ipcMain.handle('run-settlement3-seven', async () => {
+    const results = [];
+    mainWindow.webContents.send('settlement-progress3', { current: 1, total: 1 });
+    const res = await crawlSite3(6);
+    if (res) results.push(res);
+    return results;
+});
+
 ipcMain.handle('run-settlement4', async () => {
     const results = [];
     for (let i = 1; i <= 3; i++) {
