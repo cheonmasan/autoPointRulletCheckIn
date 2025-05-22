@@ -1,4 +1,6 @@
 window.addEventListener('DOMContentLoaded', () => {
+    window.electronAPI.send('renderer-ready');
+
     const checkinBtn = document.getElementById('checkin-btn');
     const pointmartBtn = document.getElementById('pointmart-btn');
     const rouletteBtn = document.getElementById('roulette-btn');
@@ -12,6 +14,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const eventStatus = document.getElementById('event-status');
     const detectionStatus = document.getElementById('detection-status');
     const createpostStatus = document.getElementById('createpost-status');
+    const exchangeStatus = document.getElementById('exchange-status');
 
     const checkinLog = document.getElementById('checkin-log');
     const pointmartLog = document.getElementById('pointmart-log');
@@ -19,6 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const eventLog = document.getElementById('event-log');
     const detectionLog = document.getElementById('detection-log');
     const createpostLog = document.getElementById('createpost-log');
+    const exchangeLog = document.getElementById('exchange-log');
 
     checkinBtn.addEventListener('click', async () => {
         await window.electronAPI.runCheckIn();
@@ -71,6 +75,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 createpostLog.value += logLine;
                 createpostLog.scrollTop = createpostLog.scrollHeight;
                 break;
+            case 'exchange':
+                exchangeLog.value += logLine;
+                exchangeLog.scrollTop = exchangeLog.scrollHeight;
+                break;
             default:
                 break;
         }
@@ -95,6 +103,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'createpost':
                 createpostStatus.textContent = status;
+                break;
+            case 'exchange':
+                exchangeStatus.textContent = status;
                 break;
             default:
                 break;
@@ -505,10 +516,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (exchangeBtn) {
         exchangeBtn.addEventListener('click', async () => {
             const status = document.getElementById('exchange-status');
-            status.textContent = '⏳';
             try {
                 const rates = await window.electronAPI.runExchange(); // exchange.js 실행
-                console.log('환율 데이터:', rates);
 
                 // UI 업데이트 (100VND → KRW)
                 document.getElementById('naver-rate').textContent = rates.naver || '-';
@@ -520,11 +529,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 document.getElementById('naver-vnd-rate').textContent = naverVnd !== '-' ? `${naverVnd}` : '-';
                 document.getElementById('cross-vnd-rate').textContent = crossVnd !== '-' ? `${crossVnd}` : '-';
-
-                status.textContent = '✅';
             } catch (error) {
                 console.error('환율 크롤링 실패:', error);
-                status.textContent = '❌';
             }
         });
     }

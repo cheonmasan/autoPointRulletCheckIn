@@ -72,12 +72,12 @@ const scheduleTasks = (updateStatus) => {
         await runCheckIn(92, 113);
         updateStatus('checkin', false)
     });
-
+    
     cron.schedule("*/5 * * * *", async () => {
         updateStatus('detection', true)
         await Promise.all([
-            runDetection(),
-            runExchange()
+            runExchange(),
+            runDetection()
         ]);
         updateStatus('detection', false)
     });

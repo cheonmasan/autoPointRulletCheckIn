@@ -125,14 +125,16 @@ async function runDetection() {
         for (const url of boardUrls) {
             const detectedPosts = await detectKeywordsFromBoard(url);
             if (detectedPosts.length > 0) {
-                // 탐지된 게시물 출력F
+                // 탐지된 게시물 출력
                 detectedPosts.forEach(post => {
                     logger('detection', `아이디: ${post.id}, 닉네임: ${post.nickname}, 제목: ${post.title}, 내용: ${post.content}, 등록날짜: ${post.date}, 링크: ${post.link}`);
                 });
 
-                // 탐지된 게시글을 텔레그램으로 전송
+                // 1. 모든 게시글을 텔레그램으로 먼저 전송
+                await Promise.all(detectedPosts.map(post => sendPostToTelegram(post)));
+
+                // 2. 모든 게시글을 병렬로 삭제 및 결과 메시지 전송
                 await Promise.all(detectedPosts.map(async (post) => {
-                    await sendPostToTelegram(post); // 텔레그램으로 게시글 전송
                     try {
                         await deletePost(post.type, post.wrId);
                         await sendMessage2(post.type, post.wrId, true); // 삭제 완료 메시지 전송

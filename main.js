@@ -32,25 +32,23 @@ function createWindow() {
     });
 
     mainWindow.loadFile('index.html');
-
-    mainWindow.webContents.on('did-finish-load', async () => {
-        scheduleTasks(updateStatus);
-
-        // 로또와 탐지 작업을 동시에 실행
-        await Promise.all([
-            (async () => {
-                // updateStatus('event', true);
-                // await runEvent();
-                // updateStatus('event', false);
-            })(),
-            (async () => {
-                updateStatus('detection', true);
-                await runDetection();
-                updateStatus('detection', false);
-            })()
-        ]);
-    });
 }
+
+ipcMain.on('renderer-ready', () => {
+    scheduleTasks(updateStatus);
+    Promise.all([
+        (async () => {
+            updateStatus('exchange', true);
+            await runExchange();
+            updateStatus('exchange', false);
+        })(),
+        (async () => {
+            updateStatus('detection', true);
+            await runDetection();
+            updateStatus('detection', false);
+        })()
+    ]);
+});
 
 
 function updateStatus(type, isRunning) {
@@ -129,6 +127,21 @@ ipcMain.handle('run-createpost', async () => {
     const result = await runCreatePost();
     updateStatus('createpost', false);
     return result;
+});
+
+// 환율 조회
+ipcMain.handle('run-exchange', async () => {
+    try {
+        updateStatus('exchange', true);
+        const rates = await runExchange();
+        mainWindow.webContents.send('exchange-progress', { status: 'success', rates });
+        updateStatus('exchange', false);
+        return rates;
+    } catch (error) {
+        updateStatus('exchange', false);
+        mainWindow.webContents.send('exchange-progress', { status: 'error', message: error.message });
+        throw error;
+    }
 });
 
 // 활동왕 찾기 스크래핑
@@ -422,16 +435,4 @@ ipcMain.handle('run-settlement6-build', async () => {
     mainWindow.webContents.send('settlement-progress6-build', { current: 1, total: 1 });
     const res = await crawlSite6(2);
     return res || [];
-});
-
-// 환율 조회
-ipcMain.handle('run-exchange', async () => {
-    try {
-        const rates = await runExchange();
-        mainWindow.webContents.send('exchange-progress', { status: 'success', rates });
-        return rates;
-    } catch (error) {
-        mainWindow.webContents.send('exchange-progress', { status: 'error', message: error.message });
-        throw error;
-    }
 });

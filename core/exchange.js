@@ -1,7 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
-const fs = require('fs'); // 파일 시스템 모듈 추가
+const { logger } = require('../utils/loggerHelper')
 
 const naverExchange = async () => {
     try {
@@ -55,7 +55,11 @@ const crossExchange = async () => {
 const runExchange = async () => {  
     try {
         const naverRate = await naverExchange();        
-        const crossRate = await crossExchange(); 
+        const crossRate = await crossExchange();
+        const naverVnd = naverRate ? (1 / naverRate * 100).toFixed(2) : '-';
+        const crossVnd = crossRate ? (1 / crossRate * 100).toFixed(2) : '-';
+
+        logger('exchange', `네이버 환율: ${naverRate} 크로스 환율: ${crossRate} 네이버 VND: ${naverVnd} 크로스 VND: ${crossVnd}`);
         return {
             naver: naverRate,
             cross: crossRate
