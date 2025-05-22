@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { getConfig, initConfig } = require('./utils/config');
-const { scheduleTasks } = require('./schedules/cron');
 const { shuffle } = require('./utils/helpers');
 const { scrape } = require('./services/scraper');
 const { crawlSite0 } = require('./services/settlements/settlement0');
@@ -35,6 +34,7 @@ function createWindow() {
 }
 
 ipcMain.on('renderer-ready', () => {
+    const { scheduleTasks } = require('./schedules/cron');
     scheduleTasks(updateStatus);
     Promise.all([
         (async () => {
@@ -157,14 +157,24 @@ ipcMain.on('start-scrape', async (event, { startDate, endDate }) => {
     }
 });
 
-ipcMain.handle('run-settlement0', async () => {
+async function runSettlement0AndSend(isAuto) {
     const results = [];
     for (let i = 1; i <= 3; i++) {
         mainWindow.webContents.send('settlement-progress0', { current: i, total: 3 });
         const res = await crawlSite0(i);
         if (res) results.push(res);
     }
-    return results;
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement0-result', results);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return results;
+    }
+}
+ipcMain.handle('run-settlement0', async () => {
+    return await runSettlement0AndSend(false);
 });
 
 ipcMain.handle('run-settlement0-lava', async () => {
@@ -191,14 +201,24 @@ ipcMain.handle('run-settlement0-pandora', async () => {
     return results;
 });
 
-ipcMain.handle('run-settlement1', async () => {
+async function runSettlement1AndSend(isAuto) {
     const results = [];
     for (let i = 1; i <= 5; i++) {
         mainWindow.webContents.send('settlement-progress1', { current: i, total: 5 });
         const res = await crawlSite1(i);
         if (res) results.push(res);
     }
-    return results;
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement1-result', results);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return results;
+    }
+}
+ipcMain.handle('run-settlement1', async () => {
+    return await runSettlement1AndSend(false);
 });
 
 ipcMain.handle('run-settlement1-nimo', async () => {
@@ -241,14 +261,24 @@ ipcMain.handle('run-settlement1-heavenking', async () => {
     return results;
 });
 
-ipcMain.handle('run-settlement2', async () => {
+async function runSettlement2AndSend(isAuto) {
     const results = [];
     for (let i = 1; i <= 6; i++) {
         mainWindow.webContents.send('settlement-progress2', { current: i, total: 6 });
         const res = await crawlSite2(i);
         if (res) results.push(res);
     }
-    return results;
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement2-result', results);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return results;
+    }
+}
+ipcMain.handle('run-settlement2', async () => {
+    return await runSettlement2AndSend(false);
 });
 
 ipcMain.handle('run-settlement2-samsung', async () => {
@@ -299,14 +329,24 @@ ipcMain.handle('run-settlement2-hawaii', async () => {
     return results;
 });
 
-ipcMain.handle('run-settlement3', async () => {
+async function runSettlement3AndSend(isAuto) {
     const results = [];
     for (let i = 1; i <= 6; i++) {
         mainWindow.webContents.send('settlement-progress3', { current: i, total: 6 });
         const res = await crawlSite3(i);
         if (res) results.push(res);
     }
-    return results;
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement3-result', results);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return results;
+    }
+}
+ipcMain.handle('run-settlement3', async () => {
+    return await runSettlement3AndSend(false);
 });
 
 ipcMain.handle('run-settlement3-kkobuki', async () => {
@@ -357,14 +397,24 @@ ipcMain.handle('run-settlement3-seven', async () => {
     return results;
 });
 
-ipcMain.handle('run-settlement4', async () => {
+async function runSettlement4AndSend(isAuto) {
     const results = [];
     for (let i = 1; i <= 3; i++) {
         mainWindow.webContents.send('settlement-progress4', { current: i, total: 3 });
         const res = await crawlSite4(i);
         if (res) results.push(res);
     }
-    return results;
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement4-result', results);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return results;
+    }
+}
+ipcMain.handle('run-settlement4', async () => {
+    return await runSettlement4AndSend(false);
 });
 
 ipcMain.handle('run-settlement4-build', async () => {
@@ -391,14 +441,25 @@ ipcMain.handle('run-settlement4-zen', async () => {
     return results;
 });
 
-ipcMain.handle('run-settlement5', async () => {
+async function runSettlement5AndSend(isAuto) {
     const results = [];
     for (let i = 1; i <= 3; i++) {
         mainWindow.webContents.send('settlement-progress5', { current: i, total: 3 });
         const res = await crawlSite5(i);
         if (res) results.push(res);
     }
-    return results;
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement5-result', results);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return results;
+    }
+}
+
+ipcMain.handle('run-settlement5', async () => {
+    return await runSettlement5AndSend(false);
 });
 
 ipcMain.handle('run-settlement5-kkobuki', async () => {
@@ -425,14 +486,45 @@ ipcMain.handle('run-settlement5-hyungjae', async () => {
     return results;
 });
 
-ipcMain.handle('run-settlement6-zen', async () => {
+async function runSettlement6ZenAndSend(isAuto) {
     mainWindow.webContents.send('settlement-progress6-zen', { current: 1, total: 1 });
     const res = await crawlSite6(1);
-    return res || [];
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement6-zen-result', res ? [res] : []);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return res || [];
+    }
+}
+ipcMain.handle('run-settlement6-zen', async () => {
+    return await runSettlement6ZenAndSend(false);
 });
 
-ipcMain.handle('run-settlement6-build', async () => {
+async function runSettlement6BuildAndSend(isAuto) {
     mainWindow.webContents.send('settlement-progress6-build', { current: 1, total: 1 });
     const res = await crawlSite6(2);
-    return res || [];
+    if (isAuto) {
+        // 자동 실행(크론 등)에서는 send로만 전달
+        mainWindow.webContents.send('settlement6-build-result', res ? [res] : []);
+        return; // return 값 없음
+    } else {
+        // 버튼 클릭(렌더러 invoke) 시에는 return 값만 전달
+        return res || [];
+    }
+}
+ipcMain.handle('run-settlement6-build', async () => {
+    return await runSettlement6BuildAndSend(false);
 });
+
+module.exports = {
+    runSettlement0AndSend,
+    runSettlement1AndSend,
+    runSettlement2AndSend,
+    runSettlement3AndSend,
+    runSettlement4AndSend,
+    runSettlement5AndSend,
+    runSettlement6ZenAndSend,
+    runSettlement6BuildAndSend
+};

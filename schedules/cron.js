@@ -8,6 +8,7 @@ const { runExchange } = require('../core/exchange');
 const { checkinGetData } = require('../services/scraper');
 const { sendMessage } = require('../services/telegram');
 const { logger } = require('../utils/loggerHelper')
+const { runSettlement0AndSend, runSettlement1AndSend, runSettlement2AndSend, runSettlement3AndSend, runSettlement4AndSend, runSettlement5AndSend, runSettlement6ZenAndSend, runSettlement6BuildAndSend } = require('../main');
 const globalVars = require('../globalVariable'); // 전역 변수 가져오기
 
 const scheduleTasks = (updateStatus) => {
@@ -80,6 +81,19 @@ const scheduleTasks = (updateStatus) => {
             runDetection()
         ]);
         updateStatus('detection', false)
+    });
+
+    cron.schedule('15 00 * * *', async () => {
+        await runSettlement1AndSend(true);
+        await runSettlement2AndSend(true);
+        await runSettlement3AndSend(true);
+        await runSettlement4AndSend(true);
+        await runSettlement5AndSend(true);
+    });
+
+    cron.schedule('15 00 1,16 * *', async () => {
+        await runSettlement6ZenAndSend(true);
+        await runSettlement6BuildAndSend(true);
     });
 };
 

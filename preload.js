@@ -57,4 +57,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     runSettlement5Kkobuki: () => ipcRenderer.invoke('run-settlement5-kkobuki'),
     runSettlement5Nimo: () => ipcRenderer.invoke('run-settlement5-nimo'),
     runSettlement5Hyungjae: () => ipcRenderer.invoke('run-settlement5-hyungjae'),
+    onSettlementResult0: (callback) => ipcRenderer.on('settlement0-result', (_event, results) => callback(results)),
+    onSettlementResult1: (callback) => ipcRenderer.on('settlement1-result', (_event, results) => callback(results)),
+    onSettlementResult2: (callback) => ipcRenderer.on('settlement2-result', (_event, results) => callback(results)),
+    onSettlementResult3: (callback) => ipcRenderer.on('settlement3-result', (_event, results) => callback(results)),
+    onSettlementResult4: (callback) => ipcRenderer.on('settlement4-result', (_event, results) => callback(results)),
+    onSettlementResult5: (callback) => ipcRenderer.on('settlement5-result', (_event, results) => callback(results)),
+    onSettlementResult6Zen: (callback) => ipcRenderer.on('settlement6-zen-result', (_event, results) => callback(results)),
+    onSettlementResult6Build: (callback) => ipcRenderer.on('settlement6-build-result', (_event, results) => callback(results))
 });
