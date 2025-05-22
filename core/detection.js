@@ -131,15 +131,15 @@ async function runDetection() {
                 });
 
                 // 탐지된 게시글을 텔레그램으로 전송
-                for (const post of detectedPosts) {
+                await Promise.all(detectedPosts.map(async (post) => {
                     await sendPostToTelegram(post); // 텔레그램으로 게시글 전송
-                    try{
+                    try {
                         await deletePost(post.type, post.wrId);
                         await sendMessage2(post.type, post.wrId, true); // 삭제 완료 메시지 전송
-                    }catch (error) {
-                        await sendMessage2(post.type, post.wrId, false); // 삭제 완료 메시지 전송
+                    } catch (error) {
+                        await sendMessage2(post.type, post.wrId, false); // 삭제 실패 메시지 전송
                     }
-                }
+                }));
             } else {
                 logger('detection', `✅ ${url}에서 탐지된 게시물이 없습니다.`);
             }
