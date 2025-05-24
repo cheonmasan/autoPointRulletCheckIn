@@ -121,7 +121,7 @@ async function crawlSite1(index) {
 
                 // 검색
                 await page.click('button.btn.btn-sm.btn-success');
-                await new Promise(resolve => setTimeout(resolve, 15000)); // 검색 결과 대기
+                await new Promise(resolve => setTimeout(resolve, 5000)); // 검색 결과 대기
             } catch (e) {
                 console.warn(`index ${index}: 어제 검색 실패`, e);
                 dateInputSuccess = false;
@@ -132,7 +132,25 @@ async function crawlSite1(index) {
             const ids = new Set();
 
             if (dateInputSuccess) {
-                // 페이지 순회
+                // ✅ 어제 충전/환전 금액만 추출 (합산 X)
+                const amounts = await page.evaluate(() => {
+                    const divs = Array.from(document.querySelectorAll('.card-body .col-12.col-xl-2'));
+                    let deposit = 0, withdraw = 0;
+                    divs.forEach(div => {
+                        const text = div.textContent.replace(/,/g, '').trim();
+                        if (text.startsWith('충전금액')) {
+                            deposit = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                        }
+                        if (text.startsWith('환전금액')) {
+                            withdraw = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                        }
+                    });
+                    return { deposit, withdraw };
+                });
+                deposit = amounts.deposit;
+                withdraw = amounts.withdraw;
+
+                // ids 추출 (충전만)
                 let hasNextPage = true;
                 while (hasNextPage) {
                     const pageData = await page.evaluate(() => {
@@ -142,27 +160,17 @@ async function crawlSite1(index) {
                                 type: cells[0]?.textContent.trim(),
                                 status: cells[1]?.textContent.trim(),
                                 id: cells[6]?.textContent.trim(),
-                                amount: cells[9]?.textContent.trim(),
                                 regDate: cells[10]?.textContent.trim()
                             };
                         });
                     });
 
-                    if (!pageData.length) {
-                        console.log(`index ${index}: /money 어제 테이블 데이터 없음`);
-                    } else {
-                        pageData.forEach(res => {
-                            const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
-                            if (regDate.slice(0, 10) >= yesterdayStart && regDate.slice(0, 10) <= yesterdayEnd && res.status === '완료') {
-                                const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-                                if (res.type === '충전') {
-                                    if (res.id) ids.add(res.id);
-                                    deposit += amount;
-                                }
-                                if (res.type === '환전') withdraw += amount;
-                            }
-                        });
-                    }
+                    pageData.forEach(res => {
+                        const regDate = res.regDate.replace(/\./g, '-');
+                        if (regDate.slice(0, 10) >= yesterdayStart && regDate.slice(0, 10) <= yesterdayEnd && res.status === '완료' && res.type === '충전' && res.id) {
+                            ids.add(res.id);
+                        }
+                    });
 
                     // 다음 페이지 확인
                     const nextPageLink = await page.$('a[aria-label="Go to next page"]');
@@ -213,53 +221,53 @@ async function crawlSite1(index) {
 
                 // 검색
                 await page.click('button.btn.btn-sm.btn-success');
-                await new Promise(resolve => setTimeout(resolve, 15000));
+                await new Promise(resolve => setTimeout(resolve, 5000));
+
+                // ✅ 충전금액, 환전금액 추출
+                const totals = await page.evaluate(() => {
+                    const divs = Array.from(document.querySelectorAll('.card-body .col-12.col-xl-2'));
+                    let totalIn = 0, totalOut = 0;
+                    divs.forEach(div => {
+                        const text = div.textContent.replace(/,/g, '').trim();
+                        if (text.startsWith('충전금액')) {
+                            totalIn = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                        }
+                        if (text.startsWith('환전금액')) {
+                            totalOut = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                        }
+                    });
+                    return { totalIn, totalOut };
+                });
+
+                totalIn = totals.totalIn;
+                totalOut = totals.totalOut;
+
             } catch (e) {
                 console.warn(`index ${index}: 한 달 검색 실패`, e);
                 dateInputSuccess = false;
             }
 
             if (dateInputSuccess) {
-                // 페이지 순회
-                let hasNextPage = true;
-                while (hasNextPage) {
-                    const pageData = await page.evaluate(() => {
-                        return Array.from(document.querySelectorAll('.table.table-hover.text-nowrap tbody tr')).map(row => {
-                            const cells = row.querySelectorAll('td');
-                            return {
-                                type: cells[0]?.textContent.trim(),
-                                status: cells[1]?.textContent.trim(),
-                                amount: cells[9]?.textContent.trim(),
-                                regDate: cells[10]?.textContent.trim()
-                            };
-                        });
-                    });
+                // 데이터 객체
+                const data = {
+                    site: '니모',
+                    date: yesterday,
+                    join,
+                    black,
+                    charge: ids.size,
+                    deposit,
+                    withdraw,
+                    totalIn,
+                    totalOut
+                };
 
-                    if (!pageData.length) {
-                        console.log(`index ${index}: /money 한 달 테이블 데이터 없음`);
-                    } else {
-                        pageData.forEach(res => {
-                            const regDate = res.regDate.replace(/\./g, '-'); // YYYY.MM.DD → YYYY-MM-DD
-                            if (regDate.slice(0, 10) >= monthStart && regDate.slice(0, 10) <= monthEnd && res.status === '완료') {
-                                const amount = parseInt(res.amount.replace(/[^0-9]/g, '') || '0');
-                                if (res.type === '충전') totalIn += amount;
-                                if (res.type === '환전') totalOut += amount;
-                            }
-                        });
-                    }
+                // 금액 포맷팅
+                data.deposit = (data.deposit || 0).toLocaleString('en-US');
+                data.withdraw = (data.withdraw || 0).toLocaleString('en-US');
+                data.totalIn = (data.totalIn || 0).toLocaleString('en-US');
+                data.totalOut = (data.totalOut || 0).toLocaleString('en-US');
 
-                    // 다음 페이지 확인
-                    const nextPageLink = await page.$('a[aria-label="Go to next page"]');
-                    if (nextPageLink && !(await page.evaluate(el => el.classList.contains('disabled'), nextPageLink))) {
-                        await Promise.all([
-                            page.click('a[aria-label="Go to next page"]'),
-                            page.waitForNavigation({ waitUntil: 'networkidle2' })
-                        ]);
-                        await page.waitForSelector('.table.table-hover.text-nowrap tbody');
-                    } else {
-                        hasNextPage = false;
-                    }
-                }
+                return data;
             } else {
                 console.log(`index ${index}: /money 한 달 데이터 스킵, 기본값 사용`);
             }
@@ -762,8 +770,8 @@ async function crawlSite1(index) {
                             type: cells[1]?.textContent.trim() || '',
                             id: cells[6]?.textContent.trim() || '',
                             amount: cells[12]?.textContent.trim() || '0',
-                            processDate: cells[18]?.textContent.trim() || '',
-                            status: cells[22]?.textContent.trim() || ''
+                            processDate: cells[17]?.textContent.trim() || '',
+                            status: cells[18]?.textContent.trim() || ''
                         };
                     }).filter(data => data !== null); // null 제거
                 });
@@ -948,8 +956,8 @@ async function crawlSite1(index) {
                             type: cells[1]?.textContent.trim() || '',
                             id: cells[6]?.textContent.trim() || '',
                             amount: cells[12]?.textContent.trim() || '0',
-                            processDate: cells[18]?.textContent.trim() || '',
-                            status: cells[22]?.textContent.trim() || ''
+                            processDate: cells[17]?.textContent.trim() || '',
+                            status: cells[18]?.textContent.trim() || ''
                         };
                     }).filter(data => data !== null); // null 제거
                 });
