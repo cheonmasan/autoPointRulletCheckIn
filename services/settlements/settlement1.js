@@ -770,8 +770,8 @@ async function crawlSite1(index) {
                             type: cells[1]?.textContent.trim() || '',
                             id: cells[6]?.textContent.trim() || '',
                             amount: cells[12]?.textContent.trim() || '0',
-                            processDate: cells[17]?.textContent.trim() || '',
-                            status: cells[18]?.textContent.trim() || ''
+                            processDate: cells[18]?.textContent.trim() || '',
+                            status: cells[22]?.textContent.trim() || ''
                         };
                     }).filter(data => data !== null); // null 제거
                 });
@@ -956,8 +956,8 @@ async function crawlSite1(index) {
                             type: cells[1]?.textContent.trim() || '',
                             id: cells[6]?.textContent.trim() || '',
                             amount: cells[12]?.textContent.trim() || '0',
-                            processDate: cells[17]?.textContent.trim() || '',
-                            status: cells[18]?.textContent.trim() || ''
+                            processDate: cells[18]?.textContent.trim() || '',
+                            status: cells[22]?.textContent.trim() || ''
                         };
                     }).filter(data => data !== null); // null 제거
                 });
