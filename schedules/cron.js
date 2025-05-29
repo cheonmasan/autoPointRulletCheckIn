@@ -84,6 +84,7 @@ const scheduleTasks = (updateStatus) => {
     });
 
     cron.schedule('15 00 * * *', async () => {
+        await runSettlement0AndSend(true);
         await runSettlement1AndSend(true);
         await runSettlement2AndSend(true);
         await runSettlement3AndSend(true);
