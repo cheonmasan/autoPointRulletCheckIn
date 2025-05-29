@@ -118,7 +118,7 @@ const runCheckIn = async (start, end) => {
             await browser.close();
             globalVars.checkinIsRunning = false;
             globalVars.checkinIsSend = false;
-            logger('checkin', `runCheckIn end", ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`);
+            logger('checkin', `runCheckIn end, ${moment().tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss")}`);
         } catch (e) {
             logger('checkin', `출석 체크 치명적인 에러 발생2: ${e.message}, Stack=${e.stack}`);
         }
